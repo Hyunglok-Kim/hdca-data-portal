@@ -302,8 +302,7 @@ h1 .h1-sub { font-size: 16px; }
 @media (max-width: 760px) { .novelty-detail { display: none; } .novelty p { font-size: 13.5px; } }
 
 /* ── "From the paper": method and results in plain words, with the manuscript's figures ── */
-.paper { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--border); max-width: 1240px; }
-.paper .lead { max-width: 100ch; }
+.paper { margin: 30px auto 0; padding-top: 22px; border-top: 1px solid var(--border); max-width: 1240px; }  /* centred in main, like the About tab */
 .pf { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px 32px; align-items: start; padding: 22px 0 6px; margin-top: 16px; border-top: 1px dashed var(--border-strong); }
 .pf figure { margin: 0; }
 .pf img { display: block; width: 100%; height: auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); }
@@ -311,7 +310,7 @@ h1 .h1-sub { font-size: 16px; }
 .pf h3 { font: 600 18px/1.3 var(--font-display); margin: 0 0 8px; }
 .pf p { color: var(--text-2); margin: 0 0 10px; line-height: 1.62; text-wrap: pretty; }
 .pf p b { color: var(--text); }
-.paper-credit { color: var(--muted); font-size: 13px; margin-top: 18px; max-width: 100ch; }
+.paper-credit { color: var(--muted); font-size: 13px; margin-top: 18px; }
 @media (max-width: 900px) { .pf { grid-template-columns: minmax(0, 1fr); gap: 12px; } }
 
 /* ── the two opening boxes: "When to use" and "What is new" side by side on wide screens ── */
