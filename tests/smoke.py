@@ -38,7 +38,10 @@ def check(ok, msg):
     (notes if ok else fails).append(("ok   " if ok else "FAIL ") + msg)
 
 
-def settle(page, ms=900):
+def settle(page, ms=900, key_prefix=None):
+    """Wait for the layer switch to land (the field may come over the internet), then for the tiles."""
+    if key_prefix:
+        page.wait_for_function("p => window.__portal.current().spec.key.startsWith(p)", arg=key_prefix, timeout=60000)
     page.wait_for_timeout(ms)
     page.wait_for_function("window.__portal.map.areTilesLoaded()", timeout=60000)
 
@@ -136,7 +139,7 @@ with sync_playwright() as pw:
 
     # day mode: a single day, then step to the next day with data, then a day without a file
     page.click("#modeSeg button[data-mode=day]")
-    settle(page, 1200)
+    settle(page, 1200, "SM|day|")
     key = page.evaluate("window.__portal.current().spec.key")
     check(key.startswith("SM|day|"), f"day layer: {key} — {page.inner_text('#lyTitle')}")
     cov = page.evaluate("window.__portal.current().stats.cover")
@@ -144,26 +147,26 @@ with sync_playwright() as pw:
     page.screenshot(path=str(shots / "04_day.png"))
     page.fill("#when input[type=date]", "2019-06-25")                   # SMAP safe mode: no file
     page.dispatch_event("#when input[type=date]", "change")
-    settle(page, 1200)
+    settle(page, 1200, "SM|day|2019-07-24")
     key2 = page.evaluate("window.__portal.current().spec.key")
     check(key2.endswith("2019-07-24"), f"a missing day falls through to the next day with a file ({key2}); flag: {page.inner_text('#lyFlag')[:70]}")
 
     # variable switch + month mode + climatology + days observed
     page.click("#varSeg button[data-var=OMEGA]")
-    settle(page, 1000)
+    settle(page, 1000, "OMEGA|day|")
     check("ω̄" in page.inner_text("#lgTitle") or "albedo" in page.inner_text("#lyTitle"), "omega layer: " + page.inner_text("#lyTitle"))
     page.click("#modeSeg button[data-mode=month]")
-    settle(page, 1000)
+    settle(page, 1000, "OMEGA|month|")
     check("mean" in page.inner_text("#lyTitle"), "month layer: " + page.inner_text("#lyTitle"))
     page.click("#varSeg button[data-var=N]")
-    settle(page, 1000)
+    settle(page, 1000, "N|month|")
     check("Days" in page.inner_text("#lyTitle"), "days-observed layer: " + page.inner_text("#lyTitle") + " · " + page.inner_text("#lyMean") + " days")
     check(page.evaluate("document.querySelector('#modeSeg button[data-mode=day]').disabled"), "day mode is disabled for the days-observed variable")
     page.click("#modeSeg button[data-mode=clim]")
-    settle(page, 1000)
+    settle(page, 1000, "N|clim|")
     check("mean over years" in page.inner_text("#lyTitle"), "climatology of days observed: " + page.inner_text("#lyTitle"))
     page.click("#varSeg button[data-var=VOD]")
-    settle(page, 1000)
+    settle(page, 1000, "VOD|clim|")
     check("VOD" in page.inner_text("#lgTitle"), "VOD climatology: " + page.inner_text("#lyTitle"))
     page.screenshot(path=str(shots / "05_vod_clim.png"))
 
@@ -173,7 +176,7 @@ with sync_playwright() as pw:
     ticks = page.inner_text("#lgTicks")
     check("≥" in ticks, f"stretched legend: {ticks.replace(chr(10), ' ')}")
     page.click("#cal button.cal-c.built >> nth=40")
-    settle(page, 1000)
+    settle(page, 1000, "VOD|month|")
     check(page.evaluate("window.__portal.state.mode") == "month", "calendar click selects a month: " + page.inner_text("#lyTitle"))
     page.click("#btnGlobe")
     page.wait_for_timeout(2200)
