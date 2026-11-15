@@ -290,3 +290,26 @@ body.hide-footer { padding-bottom: 0; }
   .logos-footer .logo-hydroai img { max-height: 44px; max-width: 100px; }
   body { padding-bottom: 60px; }
 }
+
+/* ── "What is new" — the algorithm's novelty, first thing on the Explore tab ── */
+.novelty { max-width: 1640px; margin: 0 0 14px; padding: 12px 16px 12px 18px; background: var(--surface); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent-solid); border-radius: var(--radius-sm); }
+.novelty p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.6; max-width: 110ch; }
+.novelty p b { color: var(--text); }
+.novelty .mini-h { margin-bottom: 3px; }
+.novelty-more { white-space: nowrap; font-weight: 600; }
+h1 .h1-sub { font-size: 16px; }
+@media (max-width: 760px) { .novelty-detail { display: none; } .novelty p { font-size: 13.5px; } }
+
+/* ── "From the paper": method and results in plain words, with the manuscript's figures ── */
+.paper { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--border); max-width: 1240px; }
+.paper .lead { max-width: 100ch; }
+.pf { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px 32px; align-items: start; padding: 22px 0 6px; margin-top: 16px; border-top: 1px dashed var(--border-strong); }
+.pf figure { margin: 0; }
+.pf img { display: block; width: 100%; height: auto; background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+.pf figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.pf h3 { font: 600 18px/1.3 var(--font-display); margin: 0 0 8px; }
+.pf p { color: var(--text-2); margin: 0 0 10px; line-height: 1.62; text-wrap: pretty; }
+.pf p b { color: var(--text); }
+.paper-credit { color: var(--muted); font-size: 13px; margin-top: 18px; max-width: 100ch; }
+@media (max-width: 900px) { .pf { grid-template-columns: minmax(0, 1fr); gap: 12px; } }

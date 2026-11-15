@@ -93,7 +93,7 @@ Runs on the CPU server as `discover`; one full run took five minutes with 12 PNG
 needs a member password, so declare there yourself if the run will be long.
 
 ```bash
-ssh -p 33222 discover@172.26.252.31
+# ssh to the CPU server (address, port, user and key are in the lab dashboard's server page and the PI's notes)
 cd /data/personal_data/project_hdca_portal
 # copy pipeline/*.py and run.sh into scripts/ if they changed
 scripts/run.sh all              # stats (5 min) → layers (5 min) → pack (1 min) → catalog (seconds)
@@ -108,8 +108,8 @@ venv/bin/python scripts/make_field_ref.py out > field_ref.json   # then copy to 
   should not be copied), `out/catalog.json` 0.4 MB. Copy to the dashboard Mac (about 6 MB/s, ~3 minutes):
 
 ```bash
-rsync -a --exclude '*.part' --exclude '*.dat' -e "ssh -i ~/.hydroai/l40_ssh_key -p 33222" \
-  discover@172.26.252.31:/data/personal_data/project_hdca_portal/out/ ~/.hydroai/datasets/hdca/
+rsync -a --exclude '*.part' --exclude '*.dat' -e "ssh <lab CPU server options>" \
+  <cpu-server>:/data/personal_data/project_hdca_portal/out/ ~/.hydroai/datasets/hdca/
 ```
 
 No gateway restart is needed after new data arrive; `catalog.json` is read on every page load.
@@ -136,7 +136,7 @@ reads the series store locally; without it `js/config.js` points the series at t
 `tests/smoke.py --base https://hyunglok-kim.github.io/hdca-data-portal/index.html --shots /tmp/shots-public --ref tests/field_ref.json`
 (no cookie). Pages rebuilds a minute or two after a push.
 
-**In the lab dashboard**: `http://192.168.50.88:8787/hdca.html` (sidebar 🌏 연구자료) embeds the public
+**In the lab dashboard**: `/hdca.html` on the lab dashboard (sidebar 🌏 연구자료) embeds the public
 site (`?embed=1`), the way `hampyeong.html` does. The gateway also serves this folder at `/rd/hdca/` and
 the data at `/rd/hdca/data/` for signed-in lab members (a fallback when github.io is unreachable):
 `/rd/hdca/index.html?embed=1&data=/rd/hdca/data/&nas=/home/cpuserver_data/personal_data/jaese/HDCA`.
@@ -171,6 +171,9 @@ portal's own strip because the page draws the same bar. Editing it again: Design
 Navigator → Code Embed → "Edit code embed"; the editor is CodeMirror 6, so copy the text out with ⌘A ⌘C,
 patch it, and paste it back rather than typing.
 
+The retrieval code (`Time_Varing_1Order_Scattering_code`) and the manuscript repository stay private; the
+portal does not link them (PI decision 2026-11-15). The pipeline here only builds browse data from the product.
+
 Left for the PI:
 1. **NetCDF files**: deposit on Zenodo (or similar) for a DOI; then set `ncBase` in `js/config.js` to the
    file address, so the Download tab shows direct links and the code examples use them.
@@ -194,6 +197,14 @@ Left for the PI:
 - **The partner strip is HydroAI, GIST, MIT, NASA JPL, FMI** (the co-authors' institutions), fixed to the
   bottom like Hampyeong's; `?hidefooter=1` hides it where the host page draws its own.
 - **Fields and series are for looking, not analysis.** Every CSV says so and points to the NetCDF files.
+- **The name is spelled out and the novelty comes first.** The header says "Hybrid Dual-Channel Algorithm", the
+  Explore tab opens with a "What is new" box (the time-varying effective scattering albedo), and the bottom of
+  the Explore tab explains method and results in plain words with six of the paper's figures
+  (`assets/figures/Fig3,4,5,7,9,11.jpg`, web copies of the manuscript's PNGs; the numbers in the text are
+  quoted from the manuscript). Keep those numbers in step with the published version.
+- **The retrieval code and manuscript repositories are private** and the portal does not link them.
+- **The opening globe is sized to the map box** (`globeView()`: zoom for 80 % of the shorter side, at most
+  1.55), because the fixed desktop zoom spilled the globe out of a phone-width frame.
 
 ## Gotchas already paid for
 

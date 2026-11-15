@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>HDCA · SMAP 36 km daily soil moisture, VOD and scattering albedo</title>
+<title>Hybrid Dual-Channel Algorithm (HDCA) · SMAP L-band soil moisture, VOD and scattering albedo</title>
 
 <link rel="preconnect" href="https://unpkg.com" crossorigin />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.css" />
-<link rel="stylesheet" href="css/portal.css?v=20261115d" />
+<link rel="stylesheet" href="css/portal.css?v=20261115f" />
 </head>
 <body>
 
 <div id="boot" class="boot" role="status" aria-live="polite">
   <div class="boot-mark" aria-hidden="true"></div>
-  <p class="boot-title">HDCA</p>
+  <p class="boot-title">Hybrid Dual-Channel Algorithm</p>
   <p class="boot-sub" id="bootMsg">Loading the catalog…</p>
 </div>
 
 <header class="top">
   <div class="brand">
     <p class="eyebrow">HydroAI Lab · GIST</p>
-    <h1>HDCA <span class="h1-sub">SMAP 36 km daily soil moisture, vegetation optical depth and scattering albedo</span></h1>
+    <h1>Hybrid Dual-Channel Algorithm <span class="h1-sub">(HDCA) · SMAP 36 km daily soil moisture, vegetation optical depth and scattering albedo</span></h1>
   </div>
   <dl class="facts" id="facts" aria-label="Dataset at a glance">
     <div><dt>Grid</dt><dd>36 km · EASE-Grid 2.0</dd></div>
@@ -45,6 +45,11 @@
 
 <!-- ───────────────────────────── Explore ───────────────────────────── -->
 <section id="tab-explore" class="tabpane on" role="tabpanel">
+  <!-- What is new about the algorithm, said first — the PI's instruction (2026-11-15). -->
+  <aside class="novelty" aria-label="What is new">
+    <p class="mini-h">What is new</p>
+    <p><b>The vegetation's scattering albedo is retrieved, not assumed.</b> The Hybrid Dual-Channel Algorithm retrieves soil moisture, vegetation optical depth (VOD) and a <b>time-varying effective scattering albedo <span class="ob">ω</span></b> together from SMAP's dual-polarised L-band brightness temperatures, accounting for first-order scattering in the canopy.<span class="novelty-detail"> Retrievals built on the τ–ω model keep ω fixed in time, so seasonal changes in canopy scattering end up as errors in soil moisture under dense vegetation. An analytical VOD–<span class="ob">ω</span> relationship derived from the microwave polarisation difference index constrains the inversion, which is what makes three unknowns retrievable from two channels.</span> <a href="#paper" class="novelty-more">How it works →</a></p>
+  </aside>
   <div class="explore">
     <div class="mapcol">
       <div class="layerbar" aria-label="What the map shows">
@@ -149,6 +154,64 @@
       </section>
     </aside>
   </div>
+
+  <!-- The method and the results in plain words, with the paper's own figures (PI request 2026-11-15).
+       Numbers are quoted from the manuscript (Lee et al., Remote Sensing of Environment, accepted). -->
+  <section class="paper" id="paper" aria-labelledby="paperH">
+    <p class="mini-h">From the paper</p>
+    <h2 id="paperH" class="pane-h">How the retrieval works, and how well — in plain words</h2>
+    <p class="lead">A satellite radiometer sees the soil through the canopy. The canopy both absorbs the soil's microwave emission (described by the vegetation optical depth, VOD) and scatters it (described by the scattering albedo, ω). SMAP measures only two numbers per cell and day — the brightness temperature at vertical and at horizontal polarisation — so three unknowns cannot be solved for directly. Most retrievals therefore fix ω. The six figures below show how HDCA avoids that, and what it changes.</p>
+
+    <div class="pf">
+      <figure><img src="assets/figures/Fig3.jpg" alt="Curves of scattering albedo divided by VOD against the microwave polarisation difference index, with interquartile shading" loading="lazy"><figcaption>Fig. 3 of the paper</figcaption></figure>
+      <div>
+        <h3>1 · One measurable number ties the two vegetation unknowns together</h3>
+        <p>Working through the radiative transfer for the two polarisations, the paper shows that the ratio of the effective scattering albedo to VOD is governed by the <b>microwave polarisation difference index (MPDI)</b>, a quantity computed from the two brightness temperatures SMAP already measures. Fitted on a large set of simulated canopies, a single hybrid log–exponential curve describes that ratio with R² above 0.99 (red: effective albedo <span class="ob">ω</span>, which folds first-order scattering into the usual τ–ω form; black: the single-scattering albedo). This curve is the extra equation the inversion was missing.</p>
+      </div>
+    </div>
+
+    <div class="pf">
+      <figure><img src="assets/figures/Fig4.jpg" alt="Three panels of cost-function space: a 3-D volume, a 2-D soil moisture–VOD surface at fixed albedo, and the surface obtained when albedo co-varies with VOD" loading="lazy"><figcaption>Fig. 4 of the paper</figcaption></figure>
+      <div>
+        <h3>2 · Why that makes the problem solvable</h3>
+        <p>With three free parameters the misfit between simulated and measured brightness temperatures forms a volume with no single best point (a). Fixing <span class="ob">ω</span> at a constant gives the familiar two-parameter surface (b), which is what operational retrievals do. HDCA instead lets <span class="ob">ω</span> move with VOD along the MPDI curve (the grey sheet in a), which folds the search onto a surface with a clear minimum (c) and is cheaper to compute than a full 3-D search.</p>
+        <p>The retrieval then runs twice. A first pass over the whole record produces, for each cell, 10-day running means and monthly climatologies of soil moisture, VOD and <span class="ob">ω</span>. The second pass, which is the product on this site, retrieves each day with those values as soft priors, so a single noisy overpass cannot pull the three parameters far from where the surrounding days put them.</p>
+      </div>
+    </div>
+
+    <div class="pf">
+      <figure><img src="assets/figures/Fig5.jpg" alt="Global maps of mean and standard deviation of soil moisture, 2015–2023, from SCA-V, DCA, SMAP-IB and HDCA" loading="lazy"><figcaption>Fig. 5 of the paper</figcaption></figure>
+      <div>
+        <h3>3 · What the maps look like next to SMAP's own products</h3>
+        <p>Mean and standard deviation of soil moisture over 2015–2023 from the two operational SMAP algorithms (SCA-V, DCA), the SMAP-IB product and HDCA. All four share the large-scale pattern, wetter where vegetation is dense. The difference sits in the forests: HDCA is <b>drier over forested regions and varies more from day to day</b>. Part of what the fixed-albedo retrievals read as persistently wet soil is canopy scattering that HDCA assigns to <span class="ob">ω</span> instead.</p>
+      </div>
+    </div>
+
+    <div class="pf">
+      <figure><img src="assets/figures/Fig7.jpg" alt="Time series and scatter plots of retrieved against in situ soil moisture at Millbrook, Massachusetts and Tambopata" loading="lazy"><figcaption>Fig. 7 of the paper</figcaption></figure>
+      <div>
+        <h3>4 · Against measurements under forest</h3>
+        <p>Three forest sites with in situ soil moisture. At <b>Millbrook</b> (New York) every product follows the seasonal course; HDCA reaches R = 0.82 with a bias of 0.008 m³/m³, where the others are wetter than the ground, most visibly in the growing season. At <b>Massachusetts</b>, under denser forest, the existing products fall to R of 0.37–0.54 with wet biases of 0.18–0.30 m³/m³; HDCA holds R = 0.72, ubRMSD 0.048 and bias 0.025 m³/m³. At <b>Tambopata</b> in the Amazon, where retrieval is hardest, HDCA reaches R = 0.51, ubRMSD 0.060 and bias 0.018 m³/m³. Across the International Soil Moisture Network, HDCA also shows slightly higher R and smaller random error than the other products in most land-cover classes.</p>
+      </div>
+    </div>
+
+    <div class="pf">
+      <figure><img src="assets/figures/Fig11.jpg" alt="Bar charts of R, ubRMSD and bias at the three forest sites for five retrieval configurations" loading="lazy"><figcaption>Fig. 11 of the paper</figcaption></figure>
+      <div>
+        <h3>5 · Which ingredient does what</h3>
+        <p>Switching the pieces of HDCA off one at a time at the three forest sites shows that they do different jobs: the <b>second, multi-temporal pass</b> improves correlation and random error; <b>accounting for first-order scattering</b> mainly removes the wet bias; and <b>letting the albedo vary in time</b> is what keeps soil moisture sensitive under dense vegetation. The complete configuration, the one behind this dataset, is the best of the five on all three measures.</p>
+      </div>
+    </div>
+
+    <div class="pf">
+      <figure><img src="assets/figures/Fig9.jpg" alt="Global maps of mean VOD and mean effective scattering albedo from HDCA, each with a map of temporal correlation against in-situ-constrained retrievals" loading="lazy"><figcaption>Fig. 9 of the paper</figcaption></figure>
+      <div>
+        <h3>6 · The vegetation parameters themselves, and how far to trust them</h3>
+        <p>The mean VOD and <span class="ob">ω</span> maps follow vegetation density, as earlier SMAP studies found. Because there is no ground truth for either, the paper checks them against retrievals in which the measured in situ soil moisture is fed in: VOD agrees reasonably in its day-to-day variation (median R = 0.36, better over vegetated land), <span class="ob">ω</span> much less (median R = 0.13), with little bias in either. In short, <span class="ob">ω</span> is the parameter that makes the soil moisture better; it is not yet a validated vegetation product on its own, which is why this site shows it but asks you to screen it.</p>
+      </div>
+    </div>
+    <p class="paper-credit">Figures and numbers from Lee, J., Yueh, S., Entekhabi, D., Colliander, A., Im, J., Park, C.-H., and Kim, H., <i>Remote Sensing of Environment</i>, accepted (preprint <a href="https://doi.org/10.2139/ssrn.7287481" target="_blank" rel="noopener">doi:10.2139/ssrn.7287481</a>). The evaluation period of the paper is 2015–2023; this site extends the product to the end of 2025 with the same algorithm.</p>
+  </section>
 </section>
 
 <!-- ───────────────────────────── Download ───────────────────────────── -->
@@ -223,7 +286,7 @@
   <div class="about">
   <div class="prose">
     <h2 class="pane-h">About the data</h2>
-    <p class="lead">Daily soil moisture, vegetation optical depth and effective scattering albedo on SMAP's 36 km global grid, <span id="abRecord">April 2015 to December 2025</span>, retrieved with the Hybrid Dual-Channel Algorithm (HDCA).</p>
+    <p class="lead">The Hybrid Dual-Channel Algorithm (HDCA) retrieves soil moisture, vegetation optical depth and a time-varying effective scattering albedo together from SMAP's L-band brightness temperatures. This is its daily product on SMAP's 36 km global grid, <span id="abRecord">April 2015 to December 2025</span>.</p>
 
     <h3 id="ab-algo">The algorithm</h3>
     <p>Retrieving soil moisture under dense vegetation is hard because the canopy both attenuates and scatters the microwave emission of the soil. Retrievals built on the τ–ω model usually hold the scattering albedo ω fixed in time, which ignores how vegetation scattering changes through the season and leaves systematic and random errors in the soil moisture.</p>
@@ -257,7 +320,6 @@
 
     <h3 id="ab-cite">Citation</h3>
     <p class="cite">Lee, J., Yueh, S., Entekhabi, D., Colliander, A., Im, J., Park, C.-H., and Kim, H. Soil Moisture Retrieval For Dense Vegetation Considering Time-Varying First-Order Scattering From SMAP L-Band Dual-Polarized Brightness Temperatures. <i>Remote Sensing of Environment</i>, accepted. Preprint: <a href="https://doi.org/10.2139/ssrn.7287481" target="_blank" rel="noopener">doi:10.2139/ssrn.7287481</a>.</p>
-    <p>Code: <a href="https://github.com/Hyunglok-Kim/Time_Varing_1Order_Scattering_code" target="_blank" rel="noopener">Time_Varing_1Order_Scattering_code</a> (retrieval, climatology and stacking scripts).</p>
 
     <h3 id="ab-credits">Sources and credits</h3>
     <p>SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, version 9 (O'Neill et al., NASA NSIDC DAAC, doi:10.5067/4XXOGX0OOW1S). Land outline from Natural Earth (public domain). Background imagery © Esri and its data providers.</p>
@@ -315,7 +377,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
-<script src="js/config.js?v=20261115d"></script>
-<script src="js/app.js?v=20261115d"></script>
+<script src="js/config.js?v=20261115f"></script>
+<script src="js/app.js?v=20261115f"></script>
 </body>
 </html>

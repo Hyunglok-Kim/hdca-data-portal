@@ -34,6 +34,14 @@ const MONL = ["January", "February", "March", "April", "May", "June", "July", "A
 const TILE = 256, W = 964, H = 406, Y0 = 2015;
 const NODATA = 255;
 const GLOBE = { center: [12, 18], zoom: 1.55 };
+/* The opening globe must fit the map box: on a phone the map is ~360 px wide and the 1.55 globe spills out
+   of it. Globe diameter on screen is about 140 px × 2^zoom, so pick the zoom for 80 % of the shorter side,
+   never more than the desktop's 1.55. */
+function globeView() {
+  const el = document.getElementById("map");
+  const s = Math.min(el ? el.clientWidth || 990 : 990, el ? el.clientHeight || 720 : 720);
+  return { center: GLOBE.center, zoom: clamp(Math.log2(0.8 * s / 140), 0.6, GLOBE.zoom) };
+}
 const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 /* Sequential ramps, lightness falling monotonically, one per variable so the layers are told apart at a glance. */
 const RAMPS = {
@@ -349,6 +357,7 @@ async function applyLayer() {
 /* ───────────────────────────── map ───────────────────────────── */
 function initMap() {
   registerProtocol();
+  const gv = globeView();
   map = new maplibregl.Map({
     container: "map",
     style: {
@@ -368,8 +377,8 @@ function initMap() {
         { id: "data", type: "raster", source: "data", paint: { "raster-opacity": 1, "raster-fade-duration": 120, "raster-resampling": "nearest" } },
       ],
     },
-    center: REDUCED || Q.get("intro") === "0" ? GLOBE.center : [-30, 18], zoom: REDUCED || Q.get("intro") === "0" ? GLOBE.zoom : 1.25,
-    minZoom: 0.9, maxZoom: 9,
+    center: REDUCED || Q.get("intro") === "0" ? gv.center : [-30, 18], zoom: REDUCED || Q.get("intro") === "0" ? gv.zoom : Math.max(0.5, gv.zoom - 0.3),
+    minZoom: 0.5, maxZoom: 9,
     attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false,
   });
   map.touchZoomRotate.disableRotation();
@@ -383,7 +392,7 @@ function initMap() {
     setTimeout(() => $("#boot").remove(), 500);
     addMarkers();
     loadLand();
-    if (!(REDUCED || Q.get("intro") === "0")) setTimeout(() => map.easeTo({ ...GLOBE, duration: 2600 }), 700);
+    if (!(REDUCED || Q.get("intro") === "0")) setTimeout(() => map.easeTo({ ...globeView(), duration: 2600 }), 700);
   });
   map.on("zoom", onZoom);
   map.on("mousemove", onHover);
@@ -948,7 +957,11 @@ function wire() {
     if (e.target.value !== "" && p) map.flyTo({ center: [p[1], p[2]], zoom: p[3] === "site" ? 5.2 : 3.6, duration: 1700 });
     e.target.value = "";
   };
-  $("#btnGlobe").onclick = () => map.flyTo({ ...GLOBE, duration: 1800 });
+  $("#btnGlobe").onclick = () => map.flyTo({ ...globeView(), duration: 1800 });
+  document.querySelectorAll(".novelty-more").forEach((a) => a.addEventListener("click", (e) => {   // "How it works" scrolls to the plain-words section below the map
+    const t = document.getElementById(a.getAttribute("href").slice(1)); if (!t) return;
+    e.preventDefault(); t.scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" });
+  }));
   $("#srReset").onclick = () => { state.pick = null; recordModel = null; $("#recordBox").hidden = true; if (pickMarker) pickMarker.remove(); renderGlobalSeries(); };
   $("#rcTableBtn").onclick = (e) => { const t = $("#rcTable"); t.hidden = !t.hidden; e.currentTarget.textContent = t.hidden ? "Show table" : "Hide table"; e.currentTarget.setAttribute("aria-expanded", String(!t.hidden)); sendHeight(); };
   $("#rcCsv").onclick = () => download(`hdca_cell_r${state.pick ? state.pick.row : 0}_c${state.pick ? state.pick.col : 0}.csv`, recordCSV(), "text/csv");

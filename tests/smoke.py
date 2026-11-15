@@ -128,6 +128,8 @@ with sync_playwright() as pw:
     page.screenshot(path=str(shots / "03_after_click.png"))
 
     # tooltip on the chart and its table
+    page.locator("#chart svg").scroll_into_view_if_needed()          # the chart sits below the fold now that the novelty box comes first
+    page.wait_for_timeout(300)
     sv = page.locator("#chart svg").bounding_box()
     if sv:
         page.mouse.move(sv["x"] + sv["width"] * 0.6, sv["y"] + sv["height"] * 0.5)
