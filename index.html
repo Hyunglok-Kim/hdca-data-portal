@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.css" />
-<link rel="stylesheet" href="css/portal.css?v=20261115f" />
+<link rel="stylesheet" href="css/portal.css?v=20261115g" />
 </head>
 <body>
 
@@ -45,11 +45,17 @@
 
 <!-- ───────────────────────────── Explore ───────────────────────────── -->
 <section id="tab-explore" class="tabpane on" role="tabpanel">
-  <!-- What is new about the algorithm, said first — the PI's instruction (2026-11-15). -->
+  <!-- "When to use" first, then "What is new" — the PI's instructions (2026-11-15). Side by side on wide screens. -->
+  <div class="lead-boxes">
+  <aside class="novelty when" aria-label="When to use this data">
+    <p class="mini-h">When to use this data</p>
+    <p><b>Where other satellite soil moisture stops.</b> Passive-microwave soil moisture has not been usable under dense vegetation: operational SMAP retrievals are flagged as unreliable, or not attempted, where the vegetation water content is high, so forests and dense croplands have had no observed soil moisture from space.<span class="novelty-detail"> HDCA is built for those conditions and is expected to deliver soil moisture of useful accuracy there (at the paper's forest sites R = 0.82 at Millbrook, 0.72 at Massachusetts and 0.51 at Tambopata in the Amazon). Use it wherever a study needs <b>observed, not modelled, soil moisture under heavy canopy</b>: forest drought and water stress, tropical and boreal hydrology, ecosystem and carbon-flux studies, land-surface model evaluation and data assimilation, fuel moisture for fire risk. It gives those studies a view they have not had before. Outside dense vegetation it behaves like the standard products, with a bias close to zero, so one global record serves both.</span> <a href="#paper" class="novelty-more">What the paper shows →</a></p>
+  </aside>
   <aside class="novelty" aria-label="What is new">
     <p class="mini-h">What is new</p>
     <p><b>The vegetation's scattering albedo is retrieved, not assumed.</b> The Hybrid Dual-Channel Algorithm retrieves soil moisture, vegetation optical depth (VOD) and a <b>time-varying effective scattering albedo <span class="ob">ω</span></b> together from SMAP's dual-polarised L-band brightness temperatures, accounting for first-order scattering in the canopy.<span class="novelty-detail"> Retrievals built on the τ–ω model keep ω fixed in time, so seasonal changes in canopy scattering end up as errors in soil moisture under dense vegetation. An analytical VOD–<span class="ob">ω</span> relationship derived from the microwave polarisation difference index constrains the inversion, which is what makes three unknowns retrievable from two channels.</span> <a href="#paper" class="novelty-more">How it works →</a></p>
   </aside>
+  </div>
   <div class="explore">
     <div class="mapcol">
       <div class="layerbar" aria-label="What the map shows">
@@ -377,7 +383,7 @@
 
 <script src="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
-<script src="js/config.js?v=20261115f"></script>
-<script src="js/app.js?v=20261115f"></script>
+<script src="js/config.js?v=20261115g"></script>
+<script src="js/app.js?v=20261115g"></script>
 </body>
 </html>

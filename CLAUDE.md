@@ -197,8 +197,10 @@ Left for the PI:
 - **The partner strip is HydroAI, GIST, MIT, NASA JPL, FMI** (the co-authors' institutions), fixed to the
   bottom like Hampyeong's; `?hidefooter=1` hides it where the host page draws its own.
 - **Fields and series are for looking, not analysis.** Every CSV says so and points to the NetCDF files.
-- **The name is spelled out and the novelty comes first.** The header says "Hybrid Dual-Channel Algorithm", the
-  Explore tab opens with a "What is new" box (the time-varying effective scattering albedo), and the bottom of
+- **The name is spelled out; "When to use" comes first, then the novelty.** The header says "Hybrid Dual-Channel
+  Algorithm"; the Explore tab opens with a "When to use this data" box (satellite soil moisture has been unusable
+  under dense vegetation; this record is expected to serve any study that needs observed soil moisture there)
+  beside a "What is new" box (the time-varying effective scattering albedo), and the bottom of
   the Explore tab explains method and results in plain words with six of the paper's figures
   (`assets/figures/Fig3,4,5,7,9,11.jpg`, web copies of the manuscript's PNGs; the numbers in the text are
   quoted from the manuscript). Keep those numbers in step with the published version.
