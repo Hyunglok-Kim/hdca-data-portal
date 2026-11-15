@@ -207,6 +207,10 @@ Left for the PI:
 - **The retrieval code and manuscript repositories are private** and the portal does not link them.
 - **The opening globe is sized to the map box** (`globeView()`: zoom for 80 % of the shorter side, at most
   1.55), because the fixed desktop zoom spilled the globe out of a phone-width frame.
+- **Every block inside `main` is either full width (1640 px) or centred** (`margin: 0 auto`, or a grid with
+  `justify-content: center` like the About tab). A narrower block left against the margin reads to the PI as
+  "text cut off, line breaks wrong" (the About tab in the first version, then the "From the paper" section).
+  Check layouts at 2048 CSS px wide (the PI's display) as well as 1440 and 390 before saying a change is done.
 
 ## Gotchas already paid for
 
