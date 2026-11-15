@@ -7,10 +7,10 @@ Environment*; preprint doi:10.2139/ssrn.7287481). It shows daily, monthly and cl
 globe and the full 11-year record of any cell for all three variables.
 
 **Status (2026-11-15): public on GitHub Pages** at https://hyunglok-kim.github.io/hdca-data-portal/
-(the PI's decision the same day: "공개해"). The paper is accepted but not yet published. The lab dashboard
-embeds the public page (`hdca.html`, like Hampyeong) and still serves a local copy at `/rd/hdca/` for lab
-members as a fallback. Still to do: embed on hydroai.net (Webflow), deposit the NetCDF files (Zenodo or
-similar) and put the DOI into `js/config.js` (`ncBase`) and the About tab.
+(the PI's decision the same day: "공개해") **and embedded on hydroai.net/data#hdca** the way Hampyeong is.
+The paper is accepted but not yet published. The lab dashboard embeds the public page (`hdca.html`) and still
+serves a local copy at `/rd/hdca/` for lab members as a fallback. Still to do: deposit the NetCDF files
+(Zenodo or similar) and put the DOI into `js/config.js` (`ncBase`) and the About tab.
 
 This portal follows the Prithvi-ET portal (`~/orca/projects/prithvi-et/portal/`) in structure, look and
 dashboard wiring; read that folder's `CLAUDE.md` for the shared background. What differs is the data
@@ -161,13 +161,20 @@ Done: this folder is the repository `hdca-data-portal` with Pages on `main`/root
 `hdca-data-portal-series`; `noindex` is gone; the dashboard's `hdca.html` embeds the public page and the
 registry entry is `public` with `public_url`.
 
+**hydroai.net (done the same day, through the Webflow Designer).** The Data page is one HTML Embed whose
+hash routing shows one panel per dataset card. The HDCA panel now holds
+`<iframe data-src="https://hyunglok-kim.github.io/hdca-data-portal/index.html?embed=1&hidefooter=1" …>` plus a
+`portal-logo-bar` (HydroAI, GIST, MIT, NASA JPL, FMI; the images come from this repository's `assets/logos/`),
+the card reads "Live · Open portal →", `show()` loads whichever active panel has a `data-src` iframe, and a
+`message` listener sizes the HDCA frame from the portal's `portalHeight` posts. `hidefooter=1` hides the
+portal's own strip because the page draws the same bar. Editing it again: Designer → Pages → Data →
+Navigator → Code Embed → "Edit code embed"; the editor is CodeMirror 6, so copy the text out with ⌘A ⌘C,
+patch it, and paste it back rather than typing.
+
 Left for the PI:
-1. **hydroai.net**: embed in Webflow like Hampyeong:
-   `<iframe src="https://hyunglok-kim.github.io/hdca-data-portal/index.html?embed=1" width="100%" height="1500" style="border:0"></iframe>`
-   (the page posts `{type: "portalHeight", height}` to its parent for auto-height).
-2. **NetCDF files**: deposit on Zenodo (or similar) for a DOI; then set `ncBase` in `js/config.js` to the
+1. **NetCDF files**: deposit on Zenodo (or similar) for a DOI; then set `ncBase` in `js/config.js` to the
    file address, so the Download tab shows direct links and the code examples use them.
-3. **At publication**: replace "accepted" with the published reference and DOI in the About tab and in
+2. **At publication**: replace "accepted" with the published reference and DOI in the About tab and in
    `pipeline/make_catalog.py`'s source block, and in `gateway/research_datasets.json`.
 
 ## Rules that must survive any redesign
@@ -184,6 +191,8 @@ Left for the PI:
   says the quality elsewhere is unverified; no accuracy numbers are quoted beyond what the paper reports.
 - **Basemap without labels.** Esri World Imagery; the only labels are the validation sites. Public label
   layers bring the East Sea / Dokdo naming problem.
+- **The partner strip is HydroAI, GIST, MIT, NASA JPL, FMI** (the co-authors' institutions), fixed to the
+  bottom like Hampyeong's; `?hidefooter=1` hides it where the host page draws its own.
 - **Fields and series are for looking, not analysis.** Every CSV says so and points to the NetCDF files.
 
 ## Gotchas already paid for
