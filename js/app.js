@@ -22,6 +22,7 @@ const Q = new URLSearchParams(location.search);
 }
 const EMBED = Q.get("embed") === "1";
 if (EMBED) document.documentElement.classList.add("embed");
+if (Q.get("hidefooter") === "1") document.body.classList.add("hide-footer");   // as on the Hampyeong portal
 const DATA = new URL(CFG.dataBase, location.href).href;
 /* The series store may live apart from the fields (public copy: a second GitHub Pages repository on the same
    origin, because one site holds at most 1 GB). A ?data= override (the lab copy) keeps everything together. */

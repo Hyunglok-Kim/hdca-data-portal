@@ -268,3 +268,25 @@ html.embed .top { padding-top: 14px; }
 @media (max-width: 1120px) { .about { grid-template-columns: minmax(0, 740px); } .about-side { position: static; order: -1; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }
 .ob { text-decoration: overline; text-decoration-thickness: 1.5px; }
 table.spec th { width: 190px; white-space: normal; }
+
+/* ── partner-logo footer — the same bottom-sticky strip as the Hampyeong portal ── */
+.logos-footer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 300; background: rgba(250,249,245,0.82);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border-top: 1px solid rgba(60,50,30,0.10);
+  box-shadow: 0 -4px 14px rgba(60,50,30,0.05); padding: 8px 14px; opacity: 0.85; transition: opacity 0.2s; }
+.logos-footer:hover { opacity: 1; }
+.logos-footer .logos-row { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 22px; margin: 0; }
+.logos-footer .logos-row a { display: inline-flex; align-items: center; height: 48px; transition: transform 0.15s; }
+.logos-footer .logos-row a:hover { transform: translateY(-1px); }
+.logos-footer .logos-row img { max-height: 48px; max-width: 110px; width: auto; height: auto; object-fit: contain; }
+.logos-footer .logo-hydroai img { max-height: 60px; max-width: 140px; }
+body { padding-bottom: 80px; }                                   /* room above the sticky strip */
+body.hide-footer .logos-footer { display: none; }
+body.hide-footer { padding-bottom: 0; }
+@media (max-width: 900px) {
+  .logos-footer { padding: 6px 8px; }
+  .logos-footer .logos-row { gap: 12px; }
+  .logos-footer .logos-row a { height: 36px; }
+  .logos-footer .logos-row img { max-height: 36px; max-width: 80px; }
+  .logos-footer .logo-hydroai img { max-height: 44px; max-width: 100px; }
+  body { padding-bottom: 60px; }
+}

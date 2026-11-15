@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.css" />
-<link rel="stylesheet" href="css/portal.css?v=20261115c" />
+<link rel="stylesheet" href="css/portal.css?v=20261115d" />
 </head>
 <body>
 
@@ -299,11 +299,23 @@
   <span id="footVer"></span>
 </footer>
 
+<!-- Partner-logo strip, fixed to the bottom of the viewport as on the Hampyeong portal: the home lab, then
+     the institutions of the paper's co-authors. ?hidefooter=1 hides it. -->
+<footer class="logos-footer" aria-label="Partner organizations">
+  <div class="logos-row">
+    <a href="https://hydroai.net" target="_blank" rel="noopener" class="logo-hydroai" title="HydroAI"><img src="assets/logos/hydroai.png" alt="HydroAI"></a>
+    <a href="https://www.gist.ac.kr/kr/main.html" target="_blank" rel="noopener" title="GIST"><img src="assets/logos/GIST.png" alt="GIST"></a>
+    <a href="https://www.mit.edu" target="_blank" rel="noopener" title="MIT"><img src="assets/logos/MIT.png" alt="MIT"></a>
+    <a href="https://www.jpl.nasa.gov" target="_blank" rel="noopener" title="NASA JPL"><img src="assets/logos/JPL.png" alt="NASA JPL"></a>
+    <a href="https://en.ilmatieteenlaitos.fi" target="_blank" rel="noopener" title="FMI"><img src="assets/logos/FMI.png" alt="FMI"></a>
+  </div>
+</footer>
+
 <div class="tip" id="tip" role="tooltip" hidden></div>
 
 <script src="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
-<script src="js/config.js?v=20261115c"></script>
-<script src="js/app.js?v=20261115c"></script>
+<script src="js/config.js?v=20261115d"></script>
+<script src="js/app.js?v=20261115d"></script>
 </body>
 </html>
