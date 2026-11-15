@@ -6,10 +6,11 @@ EASE-Grid 2.0 global grid, 1 April 2015 – 31 December 2025 (Lee et al., accept
 Environment*; preprint doi:10.2139/ssrn.7287481). It shows daily, monthly and climatological maps on a
 globe and the full 11-year record of any cell for all three variables.
 
-**Status (2026-11-15): prototype, lab-internal.** The paper is accepted but not yet published, so the
-portal runs inside the lab dashboard only. At publication the same folder goes public the way the
-Prithvi-ET portal is meant to (GitHub Pages, embedded in hydroai.net), and the NetCDF files to a
-repository such as Zenodo.
+**Status (2026-11-15): public on GitHub Pages** at https://hyunglok-kim.github.io/hdca-data-portal/
+(the PI's decision the same day: "공개해"). The paper is accepted but not yet published. The lab dashboard
+embeds the public page (`hdca.html`, like Hampyeong) and still serves a local copy at `/rd/hdca/` for lab
+members as a fallback. Still to do: embed on hydroai.net (Webflow), deposit the NetCDF files (Zenodo or
+similar) and put the DOI into `js/config.js` (`ncBase`) and the About tab.
 
 This portal follows the Prithvi-ET portal (`~/orca/projects/prithvi-et/portal/`) in structure, look and
 dashboard wiring; read that folder's `CLAUDE.md` for the shared background. What differs is the data
@@ -19,10 +20,12 @@ model: a coarse global grid instead of 30 m tiles, which changes how the map get
 
 | What | Where |
 |---|---|
-| Portal app (this folder) | `~/orca/projects/hdca/portal/` — static site, no build step |
+| Portal app (this folder) | `~/orca/projects/hdca/portal/` — static site, no build step; **git repository** pushed to github.com/Hyunglok-Kim/hdca-data-portal (GitHub Pages, branch `main`, root) |
+| Public field data | `data/` in this repository (catalog.json, daily/, monthly/, clim/ — 527 MB; a copy of the dashboard Mac's folder minus the series) |
+| Public series store | github.com/Hyunglok-Kim/hdca-data-portal-series (`~/orca/projects/hdca/series-site/`, 454 MB), served at https://hyunglok-kim.github.io/hdca-data-portal-series/series/… — same origin as the portal, so no CORS |
 | Source NetCDF (CPU server) | `/home/cpuserver_data/personal_data/jaese/HDCA/Retrieved_2nd/YYYY/YYYY.MM.DD/HDCA_2nd_YYYYMMDD.nc` (3,842 files, 30 GB) and the merged `…/HDCA/Results/da_HDCA_2nd_2015_2025.nc` (3.6 GB) |
 | Build workspace (CPU server) | `/data/personal_data/project_hdca_portal/` (`scripts/`, `venv/`, `out/`, `work/`, `logs/`) |
-| Browse data served to the lab (3.05 GB) | `~/.hydroai/datasets/hdca/` on the dashboard Mac (outside the Drive-synced tree) |
+| Browse data served to the lab (0.98 GB) | `~/.hydroai/datasets/hdca/` on the dashboard Mac (outside the Drive-synced tree) |
 | Dashboard pages | `hydroai-dashboard/gateway/static/research-data.html` (hub), `hdca.html` (shell) |
 | Dashboard backend | `hydroai-dashboard/gateway/research_data.py` (unchanged), registry `gateway/research_datasets.json` (entry `hdca`) |
 | Manuscript and code | `../Time_Varing_1Order_Scattering/` (Overleaf-synced), `../Time_Varing_1Order_Scattering_code/` |
@@ -48,9 +51,12 @@ merged NetCDF [3928 days x 406 x 964]                     CPU server
        daily/HDCA_<VAR>_<YYYY>.pmtiles      one 964x406 8-bit PNG per day (entry z9/x=day-of-year/y0)
        monthly/HDCA_<VAR>_monthly.pmtiles   mean of each month's days   (z9/x=(year-2015)*12+month-1)
        clim/HDCA_<VAR>_clim.pmtiles         x=0 record mean, x=1..12 calendar-month means
-       series/HDCA_series.pmtiles           per land cell: uint16 LE [3928][SM, VOD, OMEGA]  (z10/x=col/y=row)
-  └─ pipeline/make_catalog.py             catalog.json — the one file the app reads first
-rsync to the dashboard Mac → gateway serves /rd/hdca/data/… → browser
+       series/HDCA_series.pmtiles           per land cell: uint16 LE [3928][SM, VOD, OMEGA]  (z10/x=col/y=row), 2.5 GB
+  └─ pipeline/pack_series.py              gzip each entry and split by row band into six files under 90 MB (0.48 GB)
+       series/HDCA_series_r<r0>-<r1>.pmtiles   (tile_compression gzip; pmtiles.js inflates on read; the single file is deleted)
+  └─ pipeline/make_catalog.py             catalog.json — the one file the app reads first (lists the series parts)
+rsync to the dashboard Mac → gateway serves /rd/hdca/data/… → browser          (lab copy)
+copy data/ into this repository, series/ into hdca-data-portal-series → push     (public copy)
 ```
 
 **Why whole fields, not tiles.** The grid has 391,384 cells; a day is one ~100 KB PNG. The browser
@@ -64,6 +70,12 @@ folder and counts `.pmtiles` bytes for the hub card. A PMTiles archive is a rang
 store addressed by z/x/y, so the day-of-year, month index and cell row/column are used as keys. The
 addressing is written in each archive's metadata and in `catalog.json`. `pmtiles.js` fetches an entry
 with one or two range requests (leaf directory, then data).
+
+**Why two GitHub repositories.** GitHub Pages serves one site of at most 1 GB and files under 100 MB, and
+supports range requests (checked). Fields are 527 MB, the gzipped series store 454 MB, so the series lives
+in `hdca-data-portal-series` on the same origin (`js/config.js` `seriesBase`). Release assets were ruled
+out: they redirect to a host without CORS headers. The series entries are the exact uint16 values; gzip
+alone brings 2.5 GB down to 0.48 GB because nodata days are long runs of 0xFFFF.
 
 **Field contract.** PNG 964 × 406, 8-bit grayscale, `value = DN × step`, `DN 255 = no retrieval`.
 Steps: SM 0.0035 m³/m³ (DN 254 = 0.889 ≥ record maximum 0.884), VOD 0.006 (DN 254 = 1.524 ≥ search bound
@@ -84,15 +96,16 @@ needs a member password, so declare there yourself if the run will be long.
 ssh -p 33222 discover@172.26.252.31
 cd /data/personal_data/project_hdca_portal
 # copy pipeline/*.py and run.sh into scripts/ if they changed
-scripts/run.sh all              # stats (5 min) → layers (5 min) → catalog (seconds)
+scripts/run.sh all              # stats (5 min) → layers (5 min) → pack (1 min) → catalog (seconds)
 scripts/run.sh catalog          # only rebuild catalog.json
 venv/bin/python scripts/make_field_ref.py out > field_ref.json   # then copy to tests/ if the fields changed
 ```
 
 - `venv/` is `python3 -m venv --system-site-packages` plus `pip install netCDF4 pmtiles`; NumPy and
   Pillow come from the system (Python 3.10).
-- Output: `out/daily` 489 MB (33 archives), `out/monthly` 34 MB, `out/clim` 3.4 MB, `out/series` 2.5 GB,
-  `out/catalog.json` 0.4 MB. Copy to the dashboard Mac (about 6 MB/s from the server room, ~9 minutes):
+- Output: `out/daily` 489 MB (33 archives), `out/monthly` 34 MB, `out/clim` 3.4 MB, `out/series` 454 MB
+  (six gzipped row bands; `pack` deletes nothing, so remove the 2.5 GB `HDCA_series.pmtiles` by hand if it
+  should not be copied), `out/catalog.json` 0.4 MB. Copy to the dashboard Mac (about 6 MB/s, ~3 minutes):
 
 ```bash
 rsync -a --exclude '*.part' --exclude '*.dat' -e "ssh -i ~/.hydroai/l40_ssh_key -p 33222" \
@@ -101,26 +114,33 @@ rsync -a --exclude '*.part' --exclude '*.dat' -e "ssh -i ~/.hydroai/l40_ssh_key 
 
 No gateway restart is needed after new data arrive; `catalog.json` is read on every page load.
 When a new year of retrievals is added, `stats` must run again (the land mask and day coverage change)
-and the series store is rebuilt whole.
+and the series store is rebuilt whole. To publish the new data: `rsync -a --delete --exclude series
+~/.hydroai/datasets/hdca/ data/` here and `rsync -a --delete ~/.hydroai/datasets/hdca/series/
+../series-site/series/`, commit and push both repositories (each push adds the changed archives to
+history, so publish per data version, not per experiment).
 
 ## Running it
 
 **Local preview** (needs the data under `~/.hydroai/datasets/hdca/`):
 
 ```bash
-~/.venvs/hydroai/bin/python dev_server.py            # http://127.0.0.1:8791/
-~/miniconda3/bin/python tests/smoke.py --base http://127.0.0.1:8791/ --shots /tmp/shots --ref tests/field_ref.json
-~/miniconda3/bin/python tests/smoke.py --browser webkit --base http://127.0.0.1:8791/ --shots /tmp/shots-safari --ref tests/field_ref.json
+~/.venvs/hydroai/bin/python dev_server.py --port 8792        # http://127.0.0.1:8792/  (8791 is often the Prithvi-ET preview)
+~/miniconda3/bin/python tests/smoke.py --base http://127.0.0.1:8792/ --query "intro=0&data=/data/" --shots /tmp/shots --ref tests/field_ref.json
+~/miniconda3/bin/python tests/smoke.py --browser webkit --base http://127.0.0.1:8792/ --query "intro=0&data=/data/" --shots /tmp/shots-safari --ref tests/field_ref.json
 ```
 
-`python -m http.server` will not do: PMTiles needs HTTP Range requests.
+`python -m http.server` will not do: PMTiles needs HTTP Range requests. Pass `data=/data/` so the preview
+reads the series store locally; without it `js/config.js` points the series at the public site.
 
-**In the lab dashboard**: `http://192.168.50.88:8787/hdca.html` (sidebar 🌏 연구자료). The gateway serves
-this folder at `/rd/hdca/` and the data at `/rd/hdca/data/`, for signed-in lab members only. The shell
-page passes the internal settings in the address:
-`?embed=1&data=/rd/hdca/data/&nas=/home/cpuserver_data/personal_data/jaese/HDCA`. Editing a file here
-changes what the lab sees on the next page load, so bump the `?v=` on the script and style tags in
-`index.html` when you change them.
+**Public site**: https://hyunglok-kim.github.io/hdca-data-portal/ — test it with
+`tests/smoke.py --base https://hyunglok-kim.github.io/hdca-data-portal/index.html --shots /tmp/shots-public --ref tests/field_ref.json`
+(no cookie). Pages rebuilds a minute or two after a push.
+
+**In the lab dashboard**: `http://192.168.50.88:8787/hdca.html` (sidebar 🌏 연구자료) embeds the public
+site (`?embed=1`), the way `hampyeong.html` does. The gateway also serves this folder at `/rd/hdca/` and
+the data at `/rd/hdca/data/` for signed-in lab members (a fallback when github.io is unreachable):
+`/rd/hdca/index.html?embed=1&data=/rd/hdca/data/&nas=/home/cpuserver_data/personal_data/jaese/HDCA`.
+Bump the `?v=` on the script and style tags in `index.html` when you change them.
 
 To run the smoke test against the dashboard copy, mint a session cookie as described at the top of
 `gateway/research_data.py` (no password involved) and pass it in the environment:
@@ -135,18 +155,20 @@ frame), `data=/path/` (same-origin data location), `nas=/path` (lab storage path
 Code), `intro=0` (skip the globe ease-in), `tab=download|code|about`, `var=SM|VOD|OMEGA|N`,
 `date=YYYY-MM-DD` (open on that day).
 
-## Going public (at publication)
+## Public release (done 2026-11-15) and what is left
 
-1. Put the data folder (3.05 GB) and the NetCDF files somewhere public with CORS for `GET` + `Range`
-   (Cloudflare R2, as planned for Prithvi-ET). Archive the NetCDF files on Zenodo for a DOI.
-2. In `js/config.js` set `dataBase` to the data address and `ncBase` to the NetCDF address. The Download
-   tab then shows direct links and the code examples use them.
-3. Make this folder its own GitHub repository with Pages enabled (the data do not go in the repo). A
-   private repository's Pages site is public, so do not enable Pages before the paper is out.
-4. Embed in Webflow like Hampyeong: `<iframe src="https://<pages address>/index.html?embed=1" width="100%" height="1500" style="border:0"></iframe>`.
-5. Remove `<meta name="robots" content="noindex">` from `index.html`, replace "accepted" with the
-   published reference and DOI in the About tab and in `pipeline/make_catalog.py`'s source block, and
-   point the dashboard's shell page at the public address.
+Done: this folder is the repository `hdca-data-portal` with Pages on `main`/root; the series store is
+`hdca-data-portal-series`; `noindex` is gone; the dashboard's `hdca.html` embeds the public page and the
+registry entry is `public` with `public_url`.
+
+Left for the PI:
+1. **hydroai.net**: embed in Webflow like Hampyeong:
+   `<iframe src="https://hyunglok-kim.github.io/hdca-data-portal/index.html?embed=1" width="100%" height="1500" style="border:0"></iframe>`
+   (the page posts `{type: "portalHeight", height}` to its parent for auto-height).
+2. **NetCDF files**: deposit on Zenodo (or similar) for a DOI; then set `ncBase` in `js/config.js` to the
+   file address, so the Download tab shows direct links and the code examples use them.
+3. **At publication**: replace "accepted" with the published reference and DOI in the About tab and in
+   `pipeline/make_catalog.py`'s source block, and in `gateway/research_datasets.json`.
 
 ## Rules that must survive any redesign
 
@@ -175,7 +197,9 @@ Code), `intro=0` (skip the globe ease-in), `tab=download|code|about`, `var=SM|VO
   only a fallback for browsers without `DecompressionStream`.
 - **The pmtiles JS reader refuses zooms outside the header's min/max**, which the Python writer derives
   from the entries. Daily/monthly/climatology archives therefore have min = max = 9 and the series
-  archive 10; every lookup must use exactly those zooms.
+  archives 10; every lookup must use exactly those zooms.
+- **Series parts are chosen by row** (`CAT.series.parts[].rows`); rows 0–1 and 371–405 have no land cell
+  and no archive, so `seriesArchive()` returns null there instead of fetching.
 - **The input[type=date] fires `change`, not `input`**, in most browsers when typed; a day without a file
   falls through to the next day with one and the layer card says so.
 
