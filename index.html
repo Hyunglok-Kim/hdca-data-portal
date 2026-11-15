@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HDCA · SMAP 36 km daily soil moisture, VOD and scattering albedo</title>
+
+<link rel="preconnect" href="https://unpkg.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" />
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.css" />
+<link rel="stylesheet" href="css/portal.css?v=20261115c" />
+</head>
+<body>
+
+<div id="boot" class="boot" role="status" aria-live="polite">
+  <div class="boot-mark" aria-hidden="true"></div>
+  <p class="boot-title">HDCA</p>
+  <p class="boot-sub" id="bootMsg">Loading the catalog…</p>
+</div>
+
+<header class="top">
+  <div class="brand">
+    <p class="eyebrow">HydroAI Lab · GIST</p>
+    <h1>HDCA <span class="h1-sub">SMAP 36 km daily soil moisture, vegetation optical depth and scattering albedo</span></h1>
+  </div>
+  <dl class="facts" id="facts" aria-label="Dataset at a glance">
+    <div><dt>Grid</dt><dd>36 km · EASE-Grid 2.0</dd></div>
+    <div><dt>Time step</dt><dd>Daily</dd></div>
+    <div><dt>Record</dt><dd id="factRecord">—</dd></div>
+    <div><dt>Coverage</dt><dd>Global land</dd></div>
+    <div><dt>Input</dt><dd>SMAP L-band, 6 a.m.</dd></div>
+  </dl>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button role="tab" class="tab on" data-tab="explore" aria-selected="true">Explore</button>
+  <button role="tab" class="tab" data-tab="download" aria-selected="false">Download</button>
+  <button role="tab" class="tab" data-tab="code" aria-selected="false">Use in code</button>
+  <button role="tab" class="tab" data-tab="about" aria-selected="false">About the data</button>
+</nav>
+
+<main>
+
+<!-- ───────────────────────────── Explore ───────────────────────────── -->
+<section id="tab-explore" class="tabpane on" role="tabpanel">
+  <div class="explore">
+    <div class="mapcol">
+      <div class="layerbar" aria-label="What the map shows">
+        <div class="seg" id="varSeg" role="group" aria-label="Variable">
+          <button data-var="SM" class="on" title="Volumetric soil moisture of the top ~5 cm, m³/m³">Soil moisture</button>
+          <button data-var="VOD" title="Vegetation optical depth at nadir, L-band">VOD</button>
+          <button data-var="OMEGA" title="Effective scattering albedo of the vegetation layer">ω albedo</button>
+          <button data-var="N" title="Days with a retrieval — SMAP's swath coverage and outages">Days observed</button>
+        </div>
+        <div class="seg" id="modeSeg" role="group" aria-label="Period">
+          <button data-mode="all" class="on" title="Mean of every day in the record">Record mean</button>
+          <button data-mode="clim" title="Mean of one calendar month over all years">Seasonal cycle</button>
+          <button data-mode="month" title="Mean of the days of one month">Month</button>
+          <button data-mode="day" title="One day — a single 6 a.m. overpass set">Day</button>
+        </div>
+        <div class="when" id="when"></div>
+      </div>
+
+      <div class="mapwrap">
+        <div id="map" aria-label="Map of the selected variable"></div>
+
+        <div class="map-ui map-tr">
+          <select id="jump" class="mbtn jump" aria-label="Go to a place" title="Fly to a validation site or region"><option value="">Go to…</option></select>
+          <button class="mbtn" id="btnGlobe" title="Back to the whole globe">World</button>
+          <label class="mbtn slider" title="Opacity of the data layer">
+            <span>Opacity</span>
+            <input type="range" id="opacity" min="0" max="100" value="100" aria-label="Layer opacity" />
+          </label>
+        </div>
+
+        <div class="map-ui map-bl legend" id="legend" aria-label="Colour scale">
+          <div class="legend-head">
+            <span class="legend-title" id="lgTitle">—</span>
+            <div class="seg seg-sm" id="scaleSeg" role="group" aria-label="Colour scale range">
+              <button data-scale="fixed" class="on" title="Same range for every layer, so layers can be compared">Fixed</button>
+              <button data-scale="auto" title="Stretch to this layer's 2nd–98th percentile">Stretch</button>
+            </div>
+          </div>
+          <canvas id="lgHist" width="240" height="34" aria-hidden="true"></canvas>
+          <div class="lg-bar" id="lgBar"></div>
+          <div class="lg-ticks" id="lgTicks"></div>
+          <p class="lg-note"><span class="sw sw-nodata"></span><span id="lgNodata">No retrieval — not observed, frozen, or water</span></p>
+        </div>
+
+        <div class="map-ui map-br readout" id="readout" aria-live="off">
+          <span id="roRes">36 km cell</span>
+          <span id="roVal"></span>
+        </div>
+      </div>
+      <p class="hint" id="hint">Click any land cell: the panel on the right shows its daily series for the selected year and the whole 2015–2025 record, for all three retrieved variables. Each cell is 36 km; the map draws the cells as they are, without smoothing.</p>
+    </div>
+
+    <aside class="side">
+      <section class="card" id="cardLayer">
+        <p class="mini-h">On the map</p>
+        <h2 id="lyTitle">—</h2>
+        <p class="sub" id="lySub"></p>
+        <div class="tiles">
+          <div class="tile"><p class="tile-l" id="lyMeanL">Mean over observed land</p><p class="tile-v"><span id="lyMean">—</span><small id="lyUnit"></small></p></div>
+          <div class="tile">
+            <p class="tile-l" id="lyCoverL">Land cells with a retrieval</p>
+            <p class="tile-v"><span id="lyCover">—</span><small>%</small></p>
+            <div class="meter" aria-hidden="true"><i id="lyCoverBar"></i></div>
+          </div>
+        </div>
+        <p class="flag" id="lyFlag" hidden></p>
+      </section>
+
+      <section class="card" id="cardSeries">
+        <div class="card-head">
+          <div>
+            <p class="mini-h" id="srKicker">Seasonal cycle</p>
+            <h2 id="srTitle">Global mean</h2>
+          </div>
+          <button class="ghost" id="srReset" hidden>← Global mean</button>
+        </div>
+        <p class="sub" id="srSub"></p>
+        <figure class="chart" id="chart"></figure>
+        <div class="chart-actions">
+          <button class="ghost" id="srTableBtn" aria-expanded="false">Show table</button>
+          <button class="ghost" id="srCsv">Download CSV</button>
+        </div>
+        <div class="tablewrap" id="srTable" hidden></div>
+        <div class="record" id="recordBox" hidden>
+          <p class="mini-h">Full record at this cell</p>
+          <p class="sub" id="rcSub"></p>
+          <figure class="chart" id="chartRecord"></figure>
+          <div class="chart-actions">
+            <button class="ghost" id="rcTableBtn" aria-expanded="false">Show table</button>
+            <button class="ghost" id="rcCsv">Download CSV (all variables)</button>
+          </div>
+          <div class="tablewrap tall" id="rcTable" hidden></div>
+        </div>
+      </section>
+
+      <section class="card" id="cardRecord">
+        <p class="mini-h">The record</p>
+        <h2>Month by month</h2>
+        <p class="sub" id="calSub"></p>
+        <div class="cal" id="cal" role="grid" aria-label="Months with data"></div>
+        <div class="cal-legend" id="calLegend"></div>
+      </section>
+    </aside>
+  </div>
+</section>
+
+<!-- ───────────────────────────── Download ───────────────────────────── -->
+<section id="tab-download" class="tabpane" role="tabpanel" hidden>
+  <div class="prose-wide">
+    <h2 class="pane-h">Download</h2>
+    <p class="lead">One NetCDF file per day, plus one merged file for the whole record. A daily file is about 8 MB; the merged file holds every variable for 2015–2025 on one time axis.</p>
+    <div class="notice" id="dlNotice"></div>
+    <h3>The merged file</h3>
+    <div class="tablewrap">
+      <table class="grid" id="dlMerged">
+        <thead><tr><th>File</th><th class="num">Size</th><th>Dimensions</th><th>Variables</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <h3>Daily files</h3>
+    <div class="dl-tools">
+      <label>Year <select id="dlYear"></select></label>
+      <button class="ghost" id="dlCopy">Copy file list</button>
+      <span class="dl-total" id="dlTotal"></span>
+    </div>
+    <div class="tablewrap">
+      <table class="grid" id="dlTable">
+        <thead><tr><th>Year</th><th class="num">Days with data</th><th class="num">Missing days</th><th class="num">Size</th><th>Folder</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="form-hint" id="dlMissing"></p>
+    <h3>What is in a file</h3>
+    <table class="grid spec">
+      <tbody>
+        <tr><th>Format</th><td>NetCDF-4 (HDF5), zlib level 4, float32</td></tr>
+        <tr><th>Grid</th><td>EASE-Grid 2.0 global cylindrical equal-area, 36 km (EPSG:6933), 406 rows × 964 columns. <code>latitude(y, x)</code> and <code>longitude(y, x)</code> hold the cell centres; <code>y</code> and <code>x</code> are plain indices.</td></tr>
+        <tr><th>Time</th><td>Daily, one 6 a.m. (descending) overpass set per day. The merged file has a complete daily axis from 2015-04-01; days without a SMAP file are all fill values.</td></tr>
+        <tr><th><code>SM</code></th><td>Soil moisture, m³/m³. HDCA second-stage retrieval. The inversion searches 0.02 to the cell's porosity.</td></tr>
+        <tr><th><code>VOD</code></th><td>Vegetation optical depth at nadir, dimensionless, searched over 0–1.5.</td></tr>
+        <tr><th><code>OMEGA</code></th><td>Effective scattering albedo <span class="ob">ω</span>, dimensionless. Tied to VOD through the MPDI-based relationship of the paper; values above 1 occur and should be screened.</td></tr>
+        <tr><th><code>TBv</code>, <code>TBh</code></th><td>SMAP L3 brightness temperatures, V and H polarisation, K (the retrieval's input).</td></tr>
+        <tr><th><code>Teff</code></th><td>Effective soil temperature from SMAP L3, K. Cells at or below 273.15 K are not retrieved.</td></tr>
+        <tr><th>Fill value</th><td>−9999 for every variable in the merged file; in the daily files TB and Teff use NaN</td></tr>
+        <tr><th>Masking</th><td>A cell has no retrieval when there was no 6 a.m. overpass, when the microwave polarisation difference index was ≤ 0.002, or when Teff ≤ 273.15 K.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ───────────────────────────── Code ───────────────────────────── -->
+<section id="tab-code" class="tabpane" role="tabpanel" hidden>
+  <div class="prose-wide">
+    <h2 class="pane-h">Use in code</h2>
+    <p class="lead">The files are ordinary NetCDF-4: xarray opens them directly. The grid is not a regular lat/lon grid, so find a cell by its centre coordinates rather than with <code>.sel(lat=…)</code>.</p>
+
+    <h3>Python — the record at one cell</h3>
+    <pre class="code" id="codePt"></pre>
+    <button class="ghost copy" data-copy="codePt">Copy</button>
+
+    <h3>Python — a monthly mean map from the daily files</h3>
+    <pre class="code" id="codeMap"></pre>
+    <button class="ghost copy" data-copy="codeMap">Copy</button>
+
+    <h3>Python — screening before use</h3>
+    <pre class="code" id="codeQc"></pre>
+    <button class="ghost copy" data-copy="codeQc">Copy</button>
+
+    <h3>Browse fields</h3>
+    <p>The map on this site does not use pictures of the data. It reads one 8-bit numeric field per day (964 × 406 cells, in which each cell stores the value in whole steps: 0.0035 m³/m³ for soil moisture, 0.006 for VOD, 0.001 for <span class="ob">ω</span>) and projects and colours it in the browser. The pixel series come from a separate store with 0.0001 precision. Both are for looking, not for analysis: use the NetCDF files for any calculation.</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────── About ───────────────────────────── -->
+<section id="tab-about" class="tabpane" role="tabpanel" hidden>
+  <div class="about">
+  <div class="prose">
+    <h2 class="pane-h">About the data</h2>
+    <p class="lead">Daily soil moisture, vegetation optical depth and effective scattering albedo on SMAP's 36 km global grid, <span id="abRecord">April 2015 to December 2025</span>, retrieved with the Hybrid Dual-Channel Algorithm (HDCA).</p>
+
+    <h3 id="ab-algo">The algorithm</h3>
+    <p>Retrieving soil moisture under dense vegetation is hard because the canopy both attenuates and scatters the microwave emission of the soil. Retrievals built on the τ–ω model usually hold the scattering albedo ω fixed in time, which ignores how vegetation scattering changes through the season and leaves systematic and random errors in the soil moisture.</p>
+    <p>HDCA retrieves soil moisture, vegetation optical depth (VOD) and an effective scattering albedo <span class="ob">ω</span> together from SMAP's dual-polarised L-band brightness temperatures, accounting for first-order scattering in the canopy. An analytical relationship between VOD and <span class="ob">ω</span>, derived from the microwave polarisation difference index (MPDI), is used as a constraint, which makes the otherwise ill-posed three-parameter inversion tractable.</p>
+
+    <h3 id="ab-inputs">Inputs</h3>
+    <table class="grid spec">
+      <tbody>
+        <tr><th>Brightness temperatures</th><td>SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, SPL3SMP version 9 (NASA NSIDC DAAC), 6 a.m. descending overpass, water-body-corrected TB at V and H polarisation</td></tr>
+        <tr><th>Ancillary</th><td>Effective soil temperature, roughness coefficient, bulk density and clay fraction from the same SMAP product; incidence angle 40°</td></tr>
+        <tr><th>Soil dielectric model</th><td>Mironov (MBSDM), with the SMAP DCA roughness and polarisation-mixing treatment</td></tr>
+      </tbody>
+    </table>
+
+    <h3 id="ab-made">How these fields were made</h3>
+    <ul>
+      <li><b>Two passes.</b> A first retrieval over the whole record provides monthly climatologies; the second pass, shown here, uses the previous ten days and the climatology as priors for soil moisture, VOD and <span class="ob">ω</span>, and searches a 151 × 151 grid of soil moisture and VOD with <span class="ob">ω</span> tied to VOD.</li>
+      <li><b>Frozen and low-contrast cells are skipped.</b> Cells are not retrieved when the MPDI is 0.002 or less or when the effective soil temperature is at or below 273.15 K.</li>
+      <li><b>One overpass set per day.</b> Only cells with a 6 a.m. overpass that day have values; SMAP covers the globe in two to three days, so a single day shows the swath pattern. Monthly and climatological layers on this site are means over the days that had a retrieval.</li>
+      <li><b>Nothing is gap-filled or smoothed</b>, here or in the files.</li>
+    </ul>
+
+    <h3 id="ab-read">Read this before you use the numbers</h3>
+    <ul>
+      <li><b>36 km is the grid.</b> A cell averages many land covers; the retrieval represents the top few centimetres of soil under whatever is in the cell.</li>
+      <li><b>Bounds.</b> Soil moisture is searched from 0.02 m³/m³ up to the cell's porosity and VOD from 0 to 1.5; values sitting on a bound are the limit of the search, not a measurement.</li>
+      <li><b><span class="ob">ω</span> is retrieved as part of the inversion.</b> Values above 1 occur in <span id="abOmega">about 4 %</span> of retrievals and are not physical; the map's colour scale stops at 0.25 and the files keep the full value. Screen <span class="ob">ω</span> before using it on its own.</li>
+      <li><b>Validation.</b> The paper evaluates the product against forest sites (Tambopata in the Amazon; Millbrook and Massachusetts in the north-eastern United States) and agricultural SMAP core validation sites (Carman, South Fork). Elsewhere the quality is not verified.</li>
+      <li><b>Gaps.</b> <span id="abMissing">—</span></li>
+    </ul>
+
+    <h3 id="ab-cite">Citation</h3>
+    <p class="cite">Lee, J., Yueh, S., Entekhabi, D., Colliander, A., Im, J., Park, C.-H., and Kim, H. Soil Moisture Retrieval For Dense Vegetation Considering Time-Varying First-Order Scattering From SMAP L-Band Dual-Polarized Brightness Temperatures. <i>Remote Sensing of Environment</i>, accepted. Preprint: <a href="https://doi.org/10.2139/ssrn.7287481" target="_blank" rel="noopener">doi:10.2139/ssrn.7287481</a>.</p>
+    <p>Code: <a href="https://github.com/Hyunglok-Kim/Time_Varing_1Order_Scattering_code" target="_blank" rel="noopener">Time_Varing_1Order_Scattering_code</a> (retrieval, climatology and stacking scripts).</p>
+
+    <h3 id="ab-credits">Sources and credits</h3>
+    <p>SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, version 9 (O'Neill et al., NASA NSIDC DAAC, doi:10.5067/4XXOGX0OOW1S). Land outline from Natural Earth (public domain). Background imagery © Esri and its data providers.</p>
+    <p>Contact: <span id="abContact"></span> · HydroAI Lab, Gwangju Institute of Science and Technology — <a id="abMail"></a></p>
+  </div>
+
+  <aside class="about-side">
+    <div class="card">
+      <p class="mini-h">At a glance</p>
+      <dl class="glance">
+        <div><dt>Variables</dt><dd>Soil moisture (m³/m³), vegetation optical depth, effective scattering albedo <span class="ob">ω</span></dd></div>
+        <div><dt>Grid</dt><dd>EASE-Grid 2.0 global, 36 km, 406 × 964 cells</dd></div>
+        <div><dt>Time step</dt><dd>Daily, 6 a.m. descending overpass</dd></div>
+        <div><dt>Record</dt><dd id="glRecord">—</dd></div>
+        <div><dt>Input</dt><dd>SMAP L3 brightness temperatures, SPL3SMP v9</dd></div>
+        <div><dt>Files</dt><dd>NetCDF-4, one per day, plus one merged file</dd></div>
+        <div><dt>Status</dt><dd>Paper accepted in <i>Remote Sensing of Environment</i></dd></div>
+      </dl>
+    </div>
+    <div class="card">
+      <p class="mini-h">On this page</p>
+      <nav class="toc" aria-label="Sections of this page">
+        <a href="#ab-algo">The algorithm</a>
+        <a href="#ab-inputs">Inputs</a>
+        <a href="#ab-made">How these fields were made</a>
+        <a href="#ab-read">Read this before you use the numbers</a>
+        <a href="#ab-cite">Citation</a>
+        <a href="#ab-credits">Sources and credits</a>
+      </nav>
+    </div>
+  </aside>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot" id="foot">
+  <span>HydroAI Lab · Gwangju Institute of Science and Technology</span>
+  <span id="footVer"></span>
+</footer>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script src="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/pmtiles@4.5.0/dist/pmtiles.js"></script>
+<script src="js/config.js?v=20261115c"></script>
+<script src="js/app.js?v=20261115c"></script>
+</body>
+</html>
