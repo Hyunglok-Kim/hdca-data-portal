@@ -175,6 +175,15 @@ editor's text back over it so the two stay equal. Its entrance animation (panel 
 "Opening the portal" mark until the iframe loads) was written 2026-11-16 and is applied to the live page only
 once pasted through the Designer — check the live page before assuming it is there.
 
+That embed is shared with the other datasets' panels, and other sessions edit it for theirs. The copy first
+committed here (`689078a`) was made from a snapshot older than the ET panel's change of 2026-11-15: pasted as
+it was, it would have put the old static ET panel back (with the evaluation figures that were taken off the
+site), set the ET card back to "New", and dropped the sizing of the ET frame. On 2026-11-16 it was replaced by
+the live text plus the entrance and nothing else (28,139 characters, sha1 `9fab5b6d…`; the live text without
+the entrance is 25,506 characters, sha1 `20aad030…`). **Before pasting, copy the editor's text out and compare
+it with what this file was built from; if they differ, somebody has edited the page since — merge, never
+overwrite.** After pasting, check all three cards on the live page.
+
 The retrieval code (`Time_Varing_1Order_Scattering_code`) and the manuscript repository stay private; the
 portal does not link them (PI decision 2026-11-15). The pipeline here only builds browse data from the product.
 
