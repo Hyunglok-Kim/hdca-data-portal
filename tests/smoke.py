@@ -98,7 +98,10 @@ with sync_playwright() as pw:
             check(got is not None and got["sum"] == exp["sum"] and got["n255"] == exp["n255"] and got["px"] == exp["px"],
                   f"field {key} decodes to the pipeline's numbers (sum {got and got['sum']} vs {exp['sum']})")
 
-    # hover readout over the Amazon
+    # hover readout over the Amazon (the map is scrolled to the middle of the window first: with the lead boxes
+    # above it, its centre otherwise sits under the fixed partner strip and the click lands on a logo)
+    page.evaluate("document.getElementById('map').scrollIntoView({block: 'center'})")
+    page.wait_for_timeout(300)
     box = page.locator("#map").bounding_box()
     page.evaluate("window.__portal.map.jumpTo({center: [-62, -8], zoom: 4.2})")
     settle(page, 1200)

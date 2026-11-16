@@ -28,6 +28,7 @@ const DATA = new URL(CFG.dataBase, location.href).href;
    origin, because one site holds at most 1 GB). A ?data= override (the lab copy) keeps everything together. */
 const SERIES = Q.get("data") || !CFG.seriesBase ? DATA : new URL(CFG.seriesBase, location.href).href;
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const INTRO = !REDUCED && Q.get("intro") !== "0";   // opening sequence: globe sweeps in, data fades up, cards rise
 
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONL = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -374,10 +375,10 @@ function initMap() {
       layers: [
         { id: "bg", type: "background", paint: { "background-color": "#0F1318" } },
         { id: "sat", type: "raster", source: "sat", paint: { "raster-saturation": -0.45, "raster-brightness-max": 0.8 } },
-        { id: "data", type: "raster", source: "data", paint: { "raster-opacity": 1, "raster-fade-duration": 120, "raster-resampling": "nearest" } },
+        { id: "data", type: "raster", source: "data", paint: { "raster-opacity": INTRO ? 0 : 1, "raster-fade-duration": 120, "raster-resampling": "nearest" } },
       ],
     },
-    center: REDUCED || Q.get("intro") === "0" ? gv.center : [-30, 18], zoom: REDUCED || Q.get("intro") === "0" ? gv.zoom : Math.max(0.5, gv.zoom - 0.3),
+    center: INTRO ? [GLOBE.center[0] - 140, 4] : gv.center, zoom: INTRO ? Math.max(0.5, gv.zoom - 0.9) : gv.zoom,
     minZoom: 0.5, maxZoom: 9,
     attributionControl: { compact: true }, dragRotate: false, pitchWithRotate: false, touchPitch: false,
   });
@@ -392,8 +393,9 @@ function initMap() {
     setTimeout(() => $("#boot").remove(), 500);
     addMarkers();
     loadLand();
-    if (!(REDUCED || Q.get("intro") === "0")) setTimeout(() => map.easeTo({ ...globeView(), duration: 2600 }), 700);
+    if (INTRO) startIntro();
   });
+  map.on("movestart", () => { if (!ownMove) stopSpin(); });   // any move that is not ours (drag, wheel, jump, pick) ends the idle turn
   map.on("zoom", onZoom);
   map.on("mousemove", onHover);
   map.on("mouseout", () => { $("#roVal").textContent = ""; });
@@ -409,6 +411,38 @@ async function loadLand() {
   } catch (e) { console.warn("[land outline]", e.message); }
 }
 let siteMarkers = [];
+/* ── opening sequence ──
+   The globe starts small and 140° to the west, then sweeps east and grows into the map box over ~3 s while the
+   data layer fades up and the boxes and cards rise (html.intro). It then keeps turning slowly until the first
+   drag, wheel, touch, jump or pick, or for three minutes at most. Off with ?intro=0 and prefers-reduced-motion. */
+let spinning = false, spinUntil = 0, ownMove = false;
+function startIntro() {
+  document.documentElement.classList.add("intro");
+  setTimeout(() => document.documentElement.classList.remove("intro"), 3000);
+  map.setPaintProperty("data", "raster-opacity-transition", { duration: 1600, delay: 600 });
+  map.setPaintProperty("data", "raster-opacity", $("#opacity").value / 100);
+  setTimeout(() => map.setPaintProperty("data", "raster-opacity-transition", { duration: 0, delay: 0 }), 2600);
+  setTimeout(() => {
+    if (spinUntil < 0) return;                       // the visitor already took over
+    ownMove = true;
+    map.easeTo({ ...globeView(), duration: 3200, easing: (t) => 1 - Math.pow(1 - t, 3) });
+    ownMove = false;
+    /* deferred: a jump or drag that cuts the ease short fires this moveend before its own movestart */
+    map.once("moveend", () => setTimeout(() => { if (spinUntil < 0) return; spinning = true; spinUntil = Date.now() + 180000; spin(); }, 0));
+  }, 650);
+  ["wheel", "mousedown", "touchstart", "dragstart"].forEach((ev) => map.on(ev, stopSpin));   // raw input, before the map cancels an ease
+  document.addEventListener("visibilitychange", () => { if (document.hidden) stopSpin(); });
+}
+function spin() {
+  if (!spinning || Date.now() > spinUntil) { spinning = false; return; }
+  const c = map.getCenter();
+  ownMove = true;
+  map.easeTo({ center: [c.lng + 10, c.lat], duration: 7000, easing: (t) => t });
+  ownMove = false;
+  map.once("moveend", () => setTimeout(spin, 0));
+}
+function stopSpin() { spinning = false; spinUntil = -1; }
+
 function addMarkers() {
   siteMarkers = SITES.map(([name, lng, lat]) =>
     new maplibregl.Marker({ element: el("div", {}, el("span", { class: "city" }, "● " + name.split(",")[0])), anchor: "left" }).setLngLat([lng, lat]).addTo(map));

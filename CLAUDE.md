@@ -169,7 +169,11 @@ the card reads "Live · Open portal →", `show()` loads whichever active panel 
 `message` listener sizes the HDCA frame from the portal's `portalHeight` posts. `hidefooter=1` hides the
 portal's own strip because the page draws the same bar. Editing it again: Designer → Pages → Data →
 Navigator → Code Embed → "Edit code embed"; the editor is CodeMirror 6, so copy the text out with ⌘A ⌘C,
-patch it, and paste it back rather than typing.
+patch it, and paste it back rather than typing. `embed/hydroai-data-page.html` here is the intended content of
+that embed (the whole Data page: hub cards, three panels, routing script); after any Designer edit, copy the
+editor's text back over it so the two stay equal. Its entrance animation (panel fade, cards rising, the
+"Opening the portal" mark until the iframe loads) was written 2026-11-16 and is applied to the live page only
+once pasted through the Designer — check the live page before assuming it is there.
 
 The retrieval code (`Time_Varing_1Order_Scattering_code`) and the manuscript repository stay private; the
 portal does not link them (PI decision 2026-11-15). The pipeline here only builds browse data from the product.
@@ -207,6 +211,14 @@ Left for the PI:
 - **The retrieval code and manuscript repositories are private** and the portal does not link them.
 - **The opening globe is sized to the map box** (`globeView()`: zoom for 80 % of the shorter side, at most
   1.55), because the fixed desktop zoom spilled the globe out of a phone-width frame.
+- **The opening is a sequence, not a page load** (PI, 2026-11-16: "좀 더 dynamic하게"): `startIntro()` in
+  `app.js`. The globe starts small and 140° to the west and sweeps east into the map box over 3.2 s while
+  the data layer fades up (`raster-opacity` 0 → slider value with a transition) and the lead boxes, layer
+  bar, map and side cards rise in turn (`html.intro` + the `rise` keyframes in `portal.css`). It then turns
+  slowly (10° per 7 s) until the first wheel, drag, touch, jump or pick (`stopSpin`, also on any `movestart`
+  that is not ours), or for three minutes. `?intro=0` and `prefers-reduced-motion` skip all of it; the smoke
+  test runs with `intro=0`. On hydroai.net the embed adds its own entrance: the panel fades in, the frame
+  stays hidden behind a breathing globe mark until the iframe's `load` event, then fades up.
 - **Every block inside `main` is either full width (1640 px) or centred** (`margin: 0 auto`, or a grid with
   `justify-content: center` like the About tab). A narrower block left against the margin reads to the PI as
   "text cut off, line breaks wrong" (the About tab in the first version, then the "From the paper" section).
