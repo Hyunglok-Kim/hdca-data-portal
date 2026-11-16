@@ -172,17 +172,19 @@ Navigator → Code Embed → "Edit code embed"; the editor is CodeMirror 6, so c
 patch it, and paste it back rather than typing. `embed/hydroai-data-page.html` here is the intended content of
 that embed (the whole Data page: hub cards, three panels, routing script); after any Designer edit, copy the
 editor's text back over it so the two stay equal. Its entrance animation (panel fade, cards rising, the
-"Opening the portal" mark until the iframe loads) was written 2026-11-16 and is applied to the live page only
-once pasted through the Designer — check the live page before assuming it is there.
+"Opening the portal" mark until the iframe loads) was written 2026-11-16 and **has been live since that
+evening**: the file was pasted through the Designer and the site published to hydroai.net (from the Prithvi-ET
+portal session, at the lab head's word). The editor's text, the live page and this file were compared and are
+equal, byte for byte; all three cards were then checked on the live page.
 
 That embed is shared with the other datasets' panels, and other sessions edit it for theirs. The copy first
 committed here (`689078a`) was made from a snapshot older than the ET panel's change of 2026-11-15: pasted as
 it was, it would have put the old static ET panel back (with the evaluation figures that were taken off the
 site), set the ET card back to "New", and dropped the sizing of the ET frame. On 2026-11-16 it was replaced by
-the live text plus the entrance and nothing else (28,139 characters, sha1 `9fab5b6d…`; the live text without
-the entrance is 25,506 characters, sha1 `20aad030…`). **Before pasting, copy the editor's text out and compare
-it with what this file was built from; if they differ, somebody has edited the page since — merge, never
-overwrite.** After pasting, check all three cards on the live page.
+the live text plus the entrance and nothing else (28,139 characters, sha1 `9fab5b6d…`), and that is what was
+pasted. **Before the next paste, copy the editor's text out and compare it with this file; if they differ,
+somebody has edited the page since — merge, never overwrite.** After pasting, check all three cards on the
+live page.
 
 The retrieval code (`Time_Varing_1Order_Scattering_code`) and the manuscript repository stay private; the
 portal does not link them (PI decision 2026-11-15). The pipeline here only builds browse data from the product.
