@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
-"""cap_et.py BASE OUTDIR [test] — frames for the ET card: from the globe down to the Korean Peninsula and into a 30 m sample area, and back.
-Drawn in software, one settled frame at a time (camera set, tiles in, then a screenshot), from the public copy of the tiles.
-The background layer of another product is switched off: only this model's maps are coloured."""
+"""cap_et.py BASE OUTDIR [test] — frames for the ET card: the globe with ET over all land, then down to the Korean Peninsula and into
+a 30 m sample area (Pyeongchang), and back. Drawn in software, one settled frame at a time (camera set, tiles in, then a screenshot),
+from the public copy of the tiles, as the portal itself draws it.
+
+The lab head asked (2026-11-17) for the loop to open on the globe with ET laid over the whole Earth, and for the 30 m part to be
+Pyeongchang. Outside the Korean Peninsula those colours are the portal's background layer, another product (MOD16A2GF): the card
+must name it on the picture for as long as it shows (its first caption and its credit line do)."""
 import sys, json, math
 from pathlib import Path
 from playwright.sync_api import sync_playwright
@@ -25,7 +29,7 @@ def about(P, Cfar, zfar, znear, u):
     return unmerc(px - (px - cx) * k, py - (py - cy) * k) + (z,)
 
 D0 = 0.9 * H
-K0 = (104.0, 20.0); K1 = (127.7, 34.5); PEN = (127.6, 38.0); CH = (126.3591, 36.5057)      # CH: the Anmyeon sample area (coast, fields, forest)
+K0 = (80.0, 18.0); K1 = (127.7, 34.5); PEN = (127.6, 38.0); CH = (128.51588, 37.48177)     # CH: the Pyeongchang sample area (deciduous forest, valleys)
 zK0, zK1, zPEN, zCH = globe_zoom(K0[1], D0), globe_zoom(K1[1], D0), 4.95, 12.25              # zPEN: the whole peninsula; zCH: the 6.7 km sample square just inside the frame
 def segA(u):                                  # the globe turns to the region with maps, the same size throughout
     e = ease(u); lng = K0[0] + (K1[0] - K0[0]) * e; lat = K0[1] + (K1[1] - K0[1]) * e
@@ -35,7 +39,7 @@ segC = lambda u: (PEN[0], PEN[1], zPEN + 0.1 * u)                           # a 
 segD = lambda u: about(CH, PEN, zPEN + 0.1, zCH, u)                         # in to the sample square
 segE = lambda u: (CH[0], CH[1], zCH + 0.8 * ease(u))                        # and on into its 30 m pixels
 segF = lambda u: about(CH, K0, zK0, zCH + 0.8, 1 - u)                       # back out to the globe
-SEGS = [("globe", segA, 2.0), ("down", segB, 2.2), ("peninsula", segC, 0.9), ("in", segD, 3.0), ("30 m", segE, 2.0), ("out", segF, 2.6)]
+SEGS = [("globe", segA, 3.0), ("down", segB, 2.2), ("peninsula", segC, 0.9), ("in", segD, 3.0), ("30 m", segE, 2.0), ("out", segF, 2.6)]
 frames, marks, t = [], [], 0.0
 for name, f, dur in SEGS:
     n = round(dur * FPS); marks.append((name, round(t, 2), len(frames)))
@@ -52,11 +56,13 @@ with sync_playwright() as pw:
     page.goto(base, wait_until="domcontentloaded", timeout=120000)
     page.wait_for_function("window.__portal && window.__portal.map && window.__portal.map.loaded()", timeout=90000)
     page.add_style_tag(content=CSS)
-    page.evaluate("""() => { const m = window.__portal.map; m.setPadding({top: 0, bottom: 0, left: 0, right: 0}); m.setMinZoom(0); m.resize();
+    bgv = page.evaluate("""() => { const m = window.__portal.map; m.setPadding({top: 0, bottom: 0, left: 0, right: 0}); m.setMinZoom(0); m.resize();
         for (const id of ['et', 'sat', 'ctx']) if (m.getLayer(id)) m.setPaintProperty(id, 'raster-fade-duration', 0);
-        if (m.getLayer('ctx')) m.setLayoutProperty('ctx', 'visibility', 'none'); }""")
+        return m.getLayer('ctx') ? m.getLayoutProperty('ctx', 'visibility') : 'no background layer'; }""")
+    print("background layer:", bgv, flush=True)
+    assert bgv == "visible", "the loop must show the portal's background layer on the globe"
     page.wait_for_timeout(800)
-    todo = [(i, frames[i]) for i in ([m[2] for m in marks] + [marks[1][2] + 28, marks[3][2] + 30, marks[3][2] + 55, marks[4][2] + 20, marks[5][2] + 30] if test else range(len(frames)))]
+    todo = [(i, frames[i]) for i in ([m[2] for m in marks] + [marks[0][2] + 36, marks[1][2] + 28, marks[3][2] + 30, marks[3][2] + 55, marks[4][2] + 20, marks[5][2] + 30] if test else range(len(frames)))]
     bad = 0
     for i, cam in todo:
         ok = page.evaluate(SET, list(cam))
