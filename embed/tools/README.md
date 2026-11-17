@@ -62,10 +62,11 @@ Rules these pictures keep, and a re-made one must keep too:
 - **The numbers on the cards are the portals' own** (the Hampyeong About tab's station and sensor counts,
   each portal's header facts, the papers' status). When a portal's numbers change, change its card.
 
-## After a change to a caption, a credit line or the hub's columns
+## After a loop is re-made or a card is changed: run both checks before publishing and again on the live page
 
 ```bash
 python check_captions.py                      # the live page; or give the address of a local copy
+python check_playback.py                      # the same; a second argument picks firefox or webkit
 ```
 
 A caption is one line in a chip no wider than the picture minus 24 px, and anything longer is cut off with
@@ -73,3 +74,11 @@ an ellipsis; on a phone the picture is about 320 to 350 px wide, so about 47 cha
 script puts every `data-caps` text of every card into its chip at eight window widths (2048 px down to a
 360 px phone) and says which are cut off, and whether each credit line stays inside its picture. It found
 the first Amazon caption cut off at 390 px on the day it was written (2026-11-17).
+
+`check_playback.py` looks at the behaviour: every loop plays; every caption in a card's `data-caps` is shown
+at some point of its loop (one timed past the loop's end never is); opening a dataset hides the hub and stops
+the loops, and coming back starts them again; the page throws no script error; and with reduced motion no
+video is fetched and each still picture carries its card's first caption. A loop plays only while its card is
+on screen, so the test window is 2048 px wide, where all cards are in one row: widen it if the hub grows.
+Console errors are listed but not counted, because a portal opened by the test may log its own (the
+Hampyeong portal asks for station photos that do not exist).
