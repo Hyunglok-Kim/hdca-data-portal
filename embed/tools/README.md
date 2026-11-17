@@ -13,7 +13,8 @@ one settled frame at a time, with software drawing (no graphics card needed).
 |---|---|---|
 | `cvs` | The Hampyeong 1 km cell in the drone's true colour, ten flights from bare fields to harvest (2026), the 47 ground stations marked | `make_cvs.py`, from the Hampyeong portal's `data/uav/` layers and `data/stations.csv` |
 | `et-v2` | The globe with ET over all land, then down to the Korean Peninsula and into one 30 m sample area (Pyeongchang), mean annual ET | `cap_et.py`, from a local preview of the Prithvi-ET portal on its **public** copy of the tiles |
-| `hdca` | The globe turning once: soil moisture, then vegetation optical depth, then the effective scattering albedo (record means) | `cap_hdca.py` then `blend_hdca.py`, from a local preview of this portal |
+| `hdca-v2` | The globe turning with the record-mean soil moisture, then into the Amazon basin, whose soil moisture plays month by month (April 2015 to December 2025) while a chart draws the basin's monthly area mean over it | `amazon_series.py` (the area means), `cap_hdca_amazon.py` (raw frames, from a local preview of this portal), then `compose_hdca_amazon.py` (box, chart, dissolve) |
+| `hdca` (first version, retired) | The globe turning once: soil moisture, then vegetation optical depth, then the effective scattering albedo (record means) | `cap_hdca.py` then `blend_hdca.py` |
 
 ```bash
 # Python with playwright (chromium installed), numpy, Pillow; ffmpeg with libx264 and libvpx-vp9.
@@ -25,10 +26,12 @@ CVS_FPS=15 CVS_HOLD=10 CVS_FADE=8 python make_cvs.py ~/orca/projects/hampyeong-c
 python cap_et.py "http://127.0.0.1:8791/?data=/data/prithvi-openet-tiles-1/&intro=0" frames/et
 ./encode.sh frames/et et-v2 ../media 31 44 768 24
 
-# hdca — this portal's preview (dev_server.py --port 8792)
-python cap_hdca.py "http://127.0.0.1:8792/?intro=0&data=/data/" frames/hdca
-python blend_hdca.py frames/hdca frames/hdca/final
-./encode.sh frames/hdca/final hdca ../media 27 38 768 24
+# hdca-v2 — this portal's preview (dev_server.py --port 8792); needs the pmtiles package besides the above
+python amazon_series.py ../../data amazon_sm.json          # area means of the Amazon box from the portal's own fields (kept here)
+python cap_hdca_amazon.py "http://127.0.0.1:8792/?intro=0&data=/data/" frames/hdca/raw      # add 'test' for a handful of frames
+python compose_hdca_amazon.py frames/hdca/raw amazon_sm.json frames/hdca/final
+./encode.sh frames/hdca/final hdca-v2 ../media 30 44 768 24    # the maps change every frame, so CRF a step higher: 0.8 MB mp4, 1.1 MB webm
+# the first HDCA loop, retired: cap_hdca.py BASE frames/hdca0; blend_hdca.py frames/hdca0 frames/hdca0/final; encode.sh … hdca …
 ```
 
 `encode.sh FRAMES NAME OUT CRF_H264 CRF_VP9 WIDTH FPS` writes the three files. The sizes to expect are
@@ -52,5 +55,9 @@ Rules these pictures keep, and a re-made one must keep too:
   "Imagery © Esri, Maxar, Earthstar Geographics" on the picture.
 - **Clean flights only.** `make_cvs.py` lists ten flights; several others have colour artefacts over the
   forest and one is a false-colour composite.
+- **The Amazon on the HDCA card is an area mean the viewer can check.** The box is 74–50°W, 13°S–3°N (3,747 cells of
+  36 km with data); its monthly and daily means come from the portal's own published fields (`amazon_series.py`), and
+  the dashed line is the box's record mean. The lab head asked (2026-11-17) for the HDCA card to turn, come down on
+  the Amazon with soil moisture showing, and make much of that region's time series.
 - **The numbers on the cards are the portals' own** (the Hampyeong About tab's station and sensor counts,
   each portal's header facts, the papers' status). When a portal's numbers change, change its card.
