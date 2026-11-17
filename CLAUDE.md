@@ -213,6 +213,14 @@ the Pyeongchang sample area: `et-v2`, with the background product named in its f
 credit line (`embed/tools/README.md`). A re-made loop gets a new file name, so that a cached copy of the
 old picture never plays under new captions; the old files are removed once the new text is live.
 
+Later that day the lab head asked for the HDCA card to turn, come down on the Amazon with soil moisture
+showing, and make much of that region's time series: `hdca-v2` — the globe turn, the zoom into the Amazon
+basin, then the basin's soil moisture month by month with a chart over it drawing the box's monthly area mean
+(`embed/tools/README.md`; the box 74–50°W, 13°S–3°N and its means from the portal's own fields,
+`amazon_series.py` → `amazon_sm.json`). Applied in the Designer by exact replacements through `view.dispatch`
+(the editor's sha1 compared with this file first), published, written back here, and the live page checked
+line for line against this file. The first loop's files (`hdca.*`) were removed afterwards.
+
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
 `t = c.cmTile || c.cmView`, `view = t.view || t.root.view`; `view.state.doc.toString()` reads the text,
