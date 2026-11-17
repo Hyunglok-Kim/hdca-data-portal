@@ -193,25 +193,33 @@ the live text plus the entrance and nothing else, and that is what was pasted th
 paste, copy the editor's text out and compare it with this file; if they differ, somebody has edited the page
 since — merge, never overwrite.** After pasting, check every card on the live page.
 
-**The hub cards (since 2026-11-17, commit `6bf8461`).** The lab head asked for cards that say more and for
+**The hub cards (since 2026-11-17).** The lab head asked for cards that say more and for
 nicer, moving pictures. Each dataset card now opens with a short silent loop, then its key facts (grid or
 resolution, record, coverage, paper status) and what the portal offers. The loops and their first-frame
 stills are in `embed/media/`, served from this repository's Pages site; `embed/tools/README.md` says how each
-is made, which rules it keeps (only what is published; the ET loop without the other product's background
-layer; the basemap credited on the picture) and how a loop's caption times belong to it. **The facts on a
+is made, which rules it keeps (only what is published; the other product behind the ET globe named on the
+picture; the basemap credited on the picture) and how a loop's caption times belong to it. **The facts on a
 card repeat its portal's own numbers** — when a portal's record, counts or paper status change, change its
-card. The hub is three columns above 1180 px (sized so the whole hub fits one 2048 × 1050 screen), one
-column of horizontal cards down to 761 px, stacked cards below. A card's pictures play only while it is on
-screen, stop when a dataset is opened, and stay still for visitors who asked for reduced motion. Pasted and
-published from the Prithvi-ET portal session at the lab head's word; editor text, live page and the file
-compared equal, then the hub and all three panels checked on the live page in three browser engines.
+card. A card's pictures play only while it is on screen, stop when a dataset is opened, and stay still for
+visitors who asked for reduced motion. Pasted and published from the Prithvi-ET portal session at the lab
+head's word; editor text, live page and the file compared equal, then the hub and every panel checked on
+the live page in three browser engines.
+
+The same day the page changed twice more. The SMAP time-variant error portal's session added a fourth card
+and panel (`#tca`; its pictures are in that portal's repository), and with it the hub's columns: four across
+from 1700 px, two by two from 1181 px, one column of horizontal cards down to 761 px, stacked cards below.
+Then the lab head asked for the ET card's loop to open on the globe with ET over all land and to go into
+the Pyeongchang sample area: `et-v2`, with the background product named in its first caption and in its
+credit line (`embed/tools/README.md`). A re-made loop gets a new file name, so that a cached copy of the
+old picture never plays under new captions; the old files are removed once the new text is live.
 
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
 `t = c.cmTile || c.cmView`, `view = t.view || t.root.view`; `view.state.doc.toString()` reads the text,
 `view.dispatch({changes: [{from, to, insert}]})` patches it, and "Save & Close" stores it (reopen the editor
 and hash the text to confirm). And single-key shortcuts fire if you type before the page switcher's search
-box has focus ("A" opens the Add panel) — look before typing.
+box has focus ("A" opens the Add panel) — look before typing. The Designer's toolbar is not where it was
+last time either: the lab head resizes that Chrome window, so take a screenshot before the first click.
 
 The retrieval code (`Time_Varing_1Order_Scattering_code`) and the manuscript repository stay private; the
 portal does not link them (PI decision 2026-11-15). The pipeline here only builds browse data from the product.
