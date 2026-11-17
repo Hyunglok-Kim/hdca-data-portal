@@ -8,9 +8,9 @@ from playwright.sync_api import sync_playwright
 base, out = sys.argv[1], Path(sys.argv[2]); test = "test" in sys.argv[3:]
 out.mkdir(parents=True, exist_ok=True)
 W, H, FPS = 960, 540, 24
-NA, NB, NC0, NHOLD = 84, 60, 12, 18          # globe turn | zoom in | box + panel come in | hold on the last month
+NA, NB, NC0, NHOLD = 40, 40, 12, 18          # globe turn | zoom in | box + panel come in | hold on the last month  (turn and zoom brisk: the lab head found 3.5 s + 2.5 s too slow)
 BOX = [-74.0, -13.0, -50.0, 3.0]              # the averaging box of amazon_series.py
-LAT_A, LNG_A0, LNG_A1 = 15.0, 15.0, -40.0     # the turn: from Africa under the eye to the Atlantic, the Amazon coming round
+LAT_A, LNG_A0, LNG_A1 = 15.0, 25.0, -40.0     # the turn: from Africa under the eye to the Atlantic, the Amazon coming round (65° in 1.7 s)
 ZG = math.log2(0.9 * H * math.cos(math.radians(LAT_A)) / 133)   # the globe at 90 % of the frame height, as the first card
 ZT = 3.4                                      # the Amazon stage: the continent still recognisable, 36 km cells ~3 px
 BOX_AT = (480, 162)                           # where the box's centre sits in the frame, above the chart panel
@@ -47,7 +47,8 @@ with sync_playwright() as pw:
     A = [(LNG_A0 + (LNG_A1 - LNG_A0) * i / (NA - 1), LAT_A, ZG) for i in range(NA)]
     B = []
     for i in range(NB):
-        t = smooth((i + 1) / NB); B.append((A[-1][0] + (T[0] - A[-1][0]) * t, A[-1][1] + (T[1] - A[-1][1]) * t, A[-1][2] + (T[2] - A[-1][2]) * t))
+        t = 1 - (1 - (i + 1) / NB) ** 3          # ease-out: the zoom keeps the turn's pace at first, then settles
+        B.append((A[-1][0] + (T[0] - A[-1][0]) * t, A[-1][1] + (T[1] - A[-1][1]) * t, A[-1][2] + (T[2] - A[-1][2]) * t))
     want_A = [0, NA // 2] if test else range(NA)
     want_B = [NB // 3, NB - 1] if test else range(NB)
     want_M = [0, len(months) // 2, len(months) - 1] if test else range(len(months))

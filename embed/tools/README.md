@@ -13,7 +13,7 @@ one settled frame at a time, with software drawing (no graphics card needed).
 |---|---|---|
 | `cvs` | The Hampyeong 1 km cell in the drone's true colour, ten flights from bare fields to harvest (2026), the 47 ground stations marked | `make_cvs.py`, from the Hampyeong portal's `data/uav/` layers and `data/stations.csv` |
 | `et-v2` | The globe with ET over all land, then down to the Korean Peninsula and into one 30 m sample area (Pyeongchang), mean annual ET | `cap_et.py`, from a local preview of the Prithvi-ET portal on its **public** copy of the tiles |
-| `hdca-v2` | The globe turning with the record-mean soil moisture, then into the Amazon basin, whose soil moisture plays month by month (April 2015 to December 2025) while a chart draws the basin's monthly area mean over it | `amazon_series.py` (the area means), `cap_hdca_amazon.py` (raw frames, from a local preview of this portal), then `compose_hdca_amazon.py` (box, chart, dissolve) |
+| `hdca-v3` | The globe turning briskly with the record-mean soil moisture, then into the Amazon basin, whose soil moisture plays month by month (April 2015 to December 2025) while a chart draws the basin's monthly area mean over it | `amazon_series.py` (the area means), `cap_hdca_amazon.py` (raw frames, from a local preview of this portal), then `compose_hdca_amazon.py` (box, chart, dissolve) |
 | `hdca` (first version, retired) | The globe turning once: soil moisture, then vegetation optical depth, then the effective scattering albedo (record means) | `cap_hdca.py` then `blend_hdca.py` |
 
 ```bash
@@ -30,7 +30,7 @@ python cap_et.py "http://127.0.0.1:8791/?data=/data/prithvi-openet-tiles-1/&intr
 python amazon_series.py ../../data amazon_sm.json          # area means of the Amazon box from the portal's own fields (kept here)
 python cap_hdca_amazon.py "http://127.0.0.1:8792/?intro=0&data=/data/" frames/hdca/raw      # add 'test' for a handful of frames
 python compose_hdca_amazon.py frames/hdca/raw amazon_sm.json frames/hdca/final
-./encode.sh frames/hdca/final hdca-v2 ../media 30 44 768 24    # the maps change every frame, so CRF a step higher: 0.8 MB mp4, 1.1 MB webm
+./encode.sh frames/hdca/final hdca-v3 ../media 30 44 768 24    # the maps change every frame, so CRF a step higher: ~0.7 MB mp4, ~1 MB webm
 # the first HDCA loop, retired: cap_hdca.py BASE frames/hdca0; blend_hdca.py frames/hdca0 frames/hdca0/final; encode.sh … hdca …
 ```
 
@@ -46,19 +46,22 @@ Rules these pictures keep, and a re-made one must keep too:
   to open on the globe with ET over all land, as the portal itself does, and for the 30 m part to be
   Pyeongchang. Outside the Korean Peninsula those colours are the portal's background layer, another product
   (MOD16A2GF), so the card says so for as long as it shows: its first caption ("Global background: MODIS ET
-  (MOD16A2GF)", also the words on the still picture) and its credit line ("Background ET: MOD16A2GF
-  (NASA)"). Keep both when the captions are re-timed or the card is re-worded. The first version of the loop
+  (MOD16A2GF)", also the words on the still picture). Keep it when the captions are re-timed or the card is
+  re-worded. (The card's credit line that also named it went with all the cards' credit lines; see below.) The first version of the loop
   (`et.*`, the morning of the same day) had switched the background off instead.
 - **A re-made loop gets a new file name** (`et-v2`), so that a cached copy of the old picture never plays
   under the new captions. The old files go once the new text is live.
-- **The basemap is credited.** The ET and HDCA loops show Esri World Imagery; their cards carry
-  "Imagery © Esri, Maxar, Earthstar Geographics" on the picture.
+- **No credit lines on the cards (the lab head, 2026-11-17 afternoon: "모든 섹션카드 background ET: ~, imagery @Esri, 이거 지워").**
+  The ET, HDCA and TCA loops show Esri World Imagery; the `.hd-credit` lines that named it (and MOD16A2GF on the
+  ET card) were taken off the cards and the rule removed from the embed. The attribution stays where the maps are:
+  each portal's own attribution control, and here. The ET card's first caption still names MOD16A2GF.
 - **Clean flights only.** `make_cvs.py` lists ten flights; several others have colour artefacts over the
   forest and one is a false-colour composite.
 - **The Amazon on the HDCA card is an area mean the viewer can check.** The box is 74–50°W, 13°S–3°N (3,747 cells of
   36 km with data); its monthly and daily means come from the portal's own published fields (`amazon_series.py`), and
   the dashed line is the box's record mean. The lab head asked (2026-11-17) for the HDCA card to turn, come down on
-  the Amazon with soil moisture showing, and make much of that region's time series.
+  the Amazon with soil moisture showing, and make much of that region's time series; later the same day, for the
+  opening turn to be quicker (`hdca-v3`: the turn 1.7 s, the zoom 1.7 s, the Amazon stage from 3.3 s).
 - **The numbers on the cards are the portals' own** (the Hampyeong About tab's station and sensor counts,
   each portal's header facts, the papers' status). When a portal's numbers change, change its card.
 

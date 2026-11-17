@@ -219,7 +219,10 @@ basin, then the basin's soil moisture month by month with a chart over it drawin
 (`embed/tools/README.md`; the box 74–50°W, 13°S–3°N and its means from the portal's own fields,
 `amazon_series.py` → `amazon_sm.json`). Applied in the Designer by exact replacements through `view.dispatch`
 (the editor's sha1 compared with this file first), published, written back here, and the live page checked
-line for line against this file. The first loop's files (`hdca.*`) were removed afterwards.
+line for line against this file. The first loop's files (`hdca.*`) were removed afterwards. Then the lab head found
+the opening turn too slow (`hdca-v3`: turn and zoom 1.7 s each, the Amazon stage from 3.3 s) and had the credit
+lines ("Imagery © Esri…", the ET card's background line) taken off every card; the attribution stays in the
+portals' own maps and in `embed/tools/README.md`.
 
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
