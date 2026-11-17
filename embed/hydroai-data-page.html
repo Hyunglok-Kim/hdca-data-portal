@@ -108,6 +108,9 @@
     .hd-media.hd-fill video { object-fit: cover; }            /* a picture that fills its frame may be cropped */
   }
   @media (max-width: 760px) { .hd-grid { grid-template-columns: 1fr; } }
+  /* four cards: two by two on a desktop, four across where the window is wide enough for cards as wide as before */
+  @media (min-width: 1181px) and (max-width: 1699px) { .hd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1700px) { .hd-hub .hd-wrap { max-width: 1760px; } .hd-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   .hd-card.is-soon { opacity: 0.6; cursor: default; border-style: dashed; }
   .hd-thumb { display: block; width: 100%; aspect-ratio: 21 / 8; border-radius: 10px; background-color: #fff; background-repeat: no-repeat; background-size: 166.67% auto; background-position: 50% 47.8%; border: 1px solid rgba(15,23,42,0.08); margin-bottom: 4px; }
   .hd-hero { margin: 0 auto 32px; max-width: 900px; }
@@ -126,6 +129,7 @@
   .hd-hub.is-in .hd-card { animation: hdRise .55s cubic-bezier(.2,.7,.2,1) both; }
   .hd-hub.is-in .hd-card:nth-child(2) { animation-delay: .08s; }
   .hd-hub.is-in .hd-card:nth-child(3) { animation-delay: .16s; }
+  .hd-hub.is-in .hd-card:nth-child(4) { animation-delay: .24s; }
   .portal-frame { position: relative; }
   .portal-frame iframe { opacity: 0; transition: opacity .7s ease; }
   .portal-frame.is-loaded iframe { opacity: 1; }
@@ -230,6 +234,31 @@
           <span class="hd-go">Open portal &rarr;</span>
         </span>
       </a>
+      <a class="hd-card" href="#tca">
+        <span class="hd-media" role="img" aria-label="The globe turning once: SMAP soil moisture, then its triple-collocation error, then the error with its gaps filled by the model" style="background-image: url('https://hyunglok-kim.github.io/smap-tca-error-portal/embed/media/tca.jpg');">
+          <video muted loop playsinline preload="none" poster="https://hyunglok-kim.github.io/smap-tca-error-portal/embed/media/tca.jpg" data-webm="https://hyunglok-kim.github.io/smap-tca-error-portal/embed/media/tca.webm" data-mp4="https://hyunglok-kim.github.io/smap-tca-error-portal/embed/media/tca.mp4" aria-hidden="true" tabindex="-1"></video>
+          <span class="hd-cap" aria-hidden="true" data-caps='[[0, "SMAP soil moisture, 2015&ndash;2023 mean"], [3.67, "Its TCA error &sigma;, where TCA could be computed"], [7.67, "&sigma; with the gaps filled by LGBM"], [11.67, "SMAP soil moisture, 2015&ndash;2023 mean"]]'></span>
+          <span class="hd-credit">Imagery &copy; Esri, Maxar, Earthstar Geographics</span>
+        </span>
+        <span class="hd-text">
+          <span class="hd-tags"><span class="hd-tag hd-live">Live</span><span class="hd-tag">Soil moisture error</span></span>
+          <h3>SMAP Time-Variant Error</h3>
+          <p>How wrong is each SMAP soil-moisture value? The random error of every retrieval from triple collocation with ASCAT and GLDAS in a moving window, and, where triple collocation fails, predicted from SMAP&rsquo;s own variables by LGBM and DNN models, with flags that say which is which and why.</p>
+          <dl class="hd-facts">
+          <dt>Grid</dt><dd>36 km EASE-Grid 2.0, global land</dd>
+          <dt>Record</dt><dd>Every overpass, 6 a.m. and 6 p.m., February 2015 &ndash; November 2023</dd>
+          <dt>Variables</dt><dd>Soil moisture, TCA error &sigma;, &sigma; gap-filled by LGBM and by DNN, four TCA flags</dd>
+          <dt>Status</dt><dd>Published in GIScience &amp; Remote Sensing (2025); 2022 on Zenodo, other years on request</dd>
+          </dl>
+          <ul class="hd-inside">
+          <li class="hd-inside-h">In the portal</li>
+          <li>Overpass, monthly and climatological maps on a globe; where the error could be computed, filled, or not</li>
+          <li>Click a cell for its nine-year record with the four flags</li>
+          <li>Zenodo link, citation and collaboration contact</li>
+          </ul>
+          <span class="hd-go">Open portal &rarr;</span>
+        </span>
+      </a>
     </div>
   </div>
 </div>
@@ -285,10 +314,26 @@
 </div>
 </div>
 
+<div class="hd-panel" id="hd-panel-tca" hidden>
+  <a class="hd-back" href="#datasets">&larr; All datasets</a>
+<div style="margin-top: 0;">
+  <iframe
+    data-src="https://hyunglok-kim.github.io/smap-tca-error-portal/index.html?embed=1&hidefooter=1"
+    width="100%" height="3000"
+    style="border:0; display:block; width:100%; min-height:3000px; background:#fff;"
+    scrolling="no"></iframe>
+</div>
+<div class="portal-logo-bar" aria-label="Partner organizations">
+  <a href="https://hydroai.net" target="_blank" rel="noopener" class="logo-hydroai" title="HydroAI"><img src="https://hyunglok-kim.github.io/smap-tca-error-portal/assets/logos/hydroai.png" alt="HydroAI"></a>
+  <a href="https://www.gist.ac.kr/kr/main.html" target="_blank" rel="noopener" title="GIST"><img src="https://hyunglok-kim.github.io/smap-tca-error-portal/assets/logos/GIST.png" alt="GIST"></a>
+  <a href="https://www.kiaps.org" target="_blank" rel="noopener" title="KIAPS"><img src="https://hyunglok-kim.github.io/smap-tca-error-portal/assets/logos/KIAPS.png" alt="KIAPS"></a>
+</div>
+</div>
+
 <script>
 (function () {
   var hub = document.getElementById('hd-hub');
-  var panels = { cvs: document.getElementById('hd-panel-cvs'), et: document.getElementById('hd-panel-et'), hdca: document.getElementById('hd-panel-hdca') };
+  var panels = { cvs: document.getElementById('hd-panel-cvs'), et: document.getElementById('hd-panel-et'), hdca: document.getElementById('hd-panel-hdca'), tca: document.getElementById('hd-panel-tca') };
   if (!hub) return;
   function show(key) {
     var active = panels[key] ? key : '';
@@ -312,11 +357,11 @@
     window.scrollTo(0, 0);
   }
   function route() { show((window.location.hash || '').replace('#', '')); }
-  /* The HDCA and ET portals report their height; size the frame that sent it to its content instead of the fixed 3000 px. */
+  /* The HDCA, ET and TCA portals report their height; size the frame that sent it to its content instead of the fixed 3000 px. */
   window.addEventListener('message', function (e) {
     if (e.origin !== 'https://hyunglok-kim.github.io' || !e.data || e.data.type !== 'portalHeight') return;
     var h = Number(e.data.height);
-    ['hdca', 'et'].forEach(function (k) {
+    ['hdca', 'et', 'tca'].forEach(function (k) {
       var f = panels[k] && panels[k].querySelector('iframe');
       if (f && f.contentWindow === e.source && h >= 600) { f.style.height = Math.min(h, 20000) + 'px'; f.style.minHeight = '0'; f.setAttribute('height', String(Math.min(h, 20000))); }
     });
