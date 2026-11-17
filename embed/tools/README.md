@@ -61,3 +61,15 @@ Rules these pictures keep, and a re-made one must keep too:
   the Amazon with soil moisture showing, and make much of that region's time series.
 - **The numbers on the cards are the portals' own** (the Hampyeong About tab's station and sensor counts,
   each portal's header facts, the papers' status). When a portal's numbers change, change its card.
+
+## After a change to a caption, a credit line or the hub's columns
+
+```bash
+python check_captions.py                      # the live page; or give the address of a local copy
+```
+
+A caption is one line in a chip no wider than the picture minus 24 px, and anything longer is cut off with
+an ellipsis; on a phone the picture is about 320 to 350 px wide, so about 47 characters is the limit. The
+script puts every `data-caps` text of every card into its chip at eight window widths (2048 px down to a
+360 px phone) and says which are cut off, and whether each credit line stays inside its picture. It found
+the first Amazon caption cut off at 390 px on the day it was written (2026-11-17).
