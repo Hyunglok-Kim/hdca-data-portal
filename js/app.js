@@ -356,6 +356,33 @@ async function applyLayer() {
 }
 
 /* ───────────────────────────── map ───────────────────────────── */
+/* MapLibre draws with WebGL and has no other way. Where the browser gives no WebGL context — graphics
+   acceleration switched off, or lost (Chrome switches it off for the rest of the session once its graphics
+   process has failed a few times, and no longer falls back to drawing in software) — there can be no map.
+   The page then says so in the map's place instead of sitting on its loading screen for ever. Everything on
+   it that is not the map still works: applyLayer already allows for there being no map. */
+function webglWorks() {
+  try {
+    const c = document.createElement("canvas"), gl = c.getContext("webgl2") || c.getContext("webgl");
+    if (!gl) return false;
+    const lose = gl.getExtension("WEBGL_lose_context");
+    if (lose) lose.loseContext();                                  // hand the test context back
+    return true;
+  } catch (e) { return false; }
+}
+function noMap(on, why) {
+  if (on) stopSpin();                                              // no idle turn behind the message
+  document.documentElement.classList.toggle("nomap", on);
+  $("#noMap").hidden = !on;
+  const boot = $("#boot");
+  if (boot) { boot.classList.add("out"); setTimeout(() => boot.remove(), 500); }
+  if (on && why) console.warn("[map] not drawn:", why);
+  if (!window.__portal) window.__portal = { map: null, state, getField, fields, exact: () => exactDecode, latToRow, lonToCol, current: () => current, layerSpec };      // the handle for tests, without a map
+  window.__portal.noMap = on;
+  sendHeight();
+}
+const LOST_WAIT = 6000;          // ms a lost WebGL context is given to come back before the page says the map is gone
+
 function initMap() {
   registerProtocol();
   const gv = globeView();
@@ -388,6 +415,12 @@ function initMap() {
   window.__portal = { map, state, getField, fields, exact: () => exactDecode, latToRow, lonToCol, current: () => current, layerSpec };
 
   map.on("error", (e) => console.warn("[map]", e && e.error ? e.error.message : e));
+  /* A context lost while the page is open usually comes back within a second or two (the browser restarts
+     its graphics process) and MapLibre carries on. If it has not come back after a while, the page says that
+     the map is gone; if it comes back later after all, the map returns. */
+  let lost = 0;
+  map.on("webglcontextlost", () => { clearTimeout(lost); lost = setTimeout(() => noMap(true, "the WebGL context was lost and has not come back"), LOST_WAIT); });
+  map.on("webglcontextrestored", () => { clearTimeout(lost); if (document.documentElement.classList.contains("nomap")) { noMap(false); map.resize(); } });
   map.on("load", () => {
     $("#boot").classList.add("out");
     setTimeout(() => $("#boot").remove(), 500);
@@ -1034,7 +1067,8 @@ async function main() {
   const st = { n: 0, mean: null, cover: 0, p02: 0, p98: spec.step, hist: new Float64Array(255) };
   const [lo, hi] = currentRange(spec, st), { key, lut } = lutFor(spec, lo, hi);
   current = { spec, lut, lutKey: key, stats: st, field: null, lo, hi };
-  initMap();
+  if (!webglWorks()) noMap(true, "the browser gives no WebGL context");
+  else { try { initMap(); } catch (e) { noMap(true, e.message); } }
   await applyLayer();
   const tab = Q.get("tab"); if (tab && document.getElementById("tab-" + tab)) showTab(tab);
   sendHeight();

@@ -132,6 +132,14 @@ history, so publish per data version, not per experiment).
 `python -m http.server` will not do: PMTiles needs HTTP Range requests. Pass `data=/data/` so the preview
 reads the series store locally; without it `js/config.js` points the series at the public site.
 
+The test ends with two checks on the map failing: it takes WebGL away (a page whose canvases give no WebGL
+context) and expects the message in the map's place with the rest of the page working, and it loses the map's
+context on a running page and expects the message after a few seconds and the map back when the context
+returns. Chromium is run with software drawing (SwiftShader) and Firefox does the same by itself, so the test
+does not depend on the machine's graphics card. Headless WebKit uses the real one: when that card is busy with
+other work WebKit loses its contexts ("WebGL: context lost", the first screen times out), and so does every
+other map page on the machine. That is the machine, not the page.
+
 **Public site**: https://hyunglok-kim.github.io/hdca-data-portal/ — test it with
 `tests/smoke.py --base https://hyunglok-kim.github.io/hdca-data-portal/index.html --shots /tmp/shots-public --ref tests/field_ref.json`
 (no cookie). Pages rebuilds a minute or two after a push.
@@ -222,6 +230,11 @@ Left for the PI:
 - **The retrieval code and manuscript repositories are private** and the portal does not link them.
 - **The opening globe is sized to the map box** (`globeView()`: zoom for 80 % of the shorter side, at most
   1.55), because the fixed desktop zoom spilled the globe out of a phone-width frame.
+- **Never leave a visitor on the loading screen.** The map needs WebGL and cannot be drawn without it. Where
+  the browser gives no context (`webglWorks()`), or the map fails to start, or its context is lost and has not
+  come back after `LOST_WAIT`, `noMap()` puts a message where the map would be — what is wrong and what to do
+  about it — and takes the loading screen away. The cards, the layer buttons and the other tabs go on working
+  without the map (`applyLayer` allows for `map` being undefined); keep it so.
 - **The opening is a sequence, not a page load** (PI, 2026-11-16: "좀 더 dynamic하게"): `startIntro()` in
   `app.js`. The globe starts small and 140° to the west and sweeps east into the map box over 3.2 s while
   the data layer fades up (`raster-opacity` 0 → slider value with a transition) and the lead boxes, layer
@@ -237,6 +250,15 @@ Left for the PI:
 
 ## Gotchas already paid for
 
+- **"The site does not open."** On 2026-11-17 this page and the Prithvi-ET one stayed on "Loading the
+  catalog…" in the lab head's Chrome and looked broken. The servers and the pages were fine. Chrome's graphics
+  process had been killed three times in a few minutes the evening before (the Mac's graphics card was
+  overloaded by other work), after which Chrome keeps graphics acceleration off until it is restarted, and
+  current Chrome does not draw WebGL in software instead. `new maplibregl.Map` then throws, and the loading
+  screen was only ever taken away by the map's `load` event. Hence the check before the map is made and the
+  message (added from the Prithvi-ET portal session, at the lab head's word, in both portals). To tell this
+  case from a broken site: in the browser that fails, `document.createElement("canvas").getContext("webgl")`
+  is `null`, while a fresh browser opens the page.
 - **Analytic grid mapping.** The EASE-Grid 2.0 row of a latitude comes from the authalic q(φ) with the
   grid constants in `app.js` (`EASE`). `loadCatalog` checks every catalogue row centre lands in its own
   row and warns otherwise; `tests/smoke.py` fails on a mismatch.
