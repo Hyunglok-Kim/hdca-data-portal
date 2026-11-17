@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.1/dist/maplibre-gl.css" />
-<link rel="stylesheet" href="css/portal.css?v=20261117a" />
+<link rel="stylesheet" href="css/portal.css?v=20261117b" />
 </head>
 <body>
 
@@ -56,6 +56,8 @@
     <p><b>The vegetation's scattering albedo is retrieved, not assumed.</b> The Hybrid Dual-Channel Algorithm retrieves soil moisture, vegetation optical depth (VOD) and a <b>time-varying effective scattering albedo <span class="ob">ω</span></b> together from SMAP's dual-polarised L-band brightness temperatures, accounting for first-order scattering in the canopy.<span class="novelty-detail"> Retrievals built on the τ–ω model keep ω fixed in time, so seasonal changes in canopy scattering end up as errors in soil moisture under dense vegetation. An analytical VOD–<span class="ob">ω</span> relationship derived from the microwave polarisation difference index constrains the inversion, which is what makes three unknowns retrievable from two channels.</span> <a href="#paper" class="novelty-more">How it works →</a></p>
   </aside>
   </div>
+  <!-- Data use in one line (PI, 2026-11-17): where the files are, what to cite, whom to write to for collaboration. -->
+  <p class="use-strip" aria-label="Using these data"><span><b>Data</b> NetCDF files on request until the Zenodo deposit; a DOI will be linked here</span><span><b>Please cite</b> <a href="https://doi.org/10.2139/ssrn.7287481" target="_blank" rel="noopener">Lee et al., <i>Remote Sensing of Environment</i> (accepted; preprint doi:10.2139/ssrn.7287481)</a></span><span><b>Research collaboration</b> <a href="mailto:hyunglokkim@gist.ac.kr">hyunglokkim@gist.ac.kr</a></span></p>
   <div class="explore">
     <div class="mapcol">
       <div class="layerbar" aria-label="What the map shows">
@@ -236,6 +238,11 @@
 <section id="tab-download" class="tabpane" role="tabpanel" hidden>
   <div class="prose-wide">
     <h2 class="pane-h">Download</h2>
+    <div class="usebox" aria-label="Using these data">
+      <div><p class="mini-h">Data</p><p>The NetCDF files are not in a public repository yet; a Zenodo DOI will be linked here when they are deposited. Until then write to <a href="mailto:hyunglokkim@gist.ac.kr">hyunglokkim@gist.ac.kr</a> and say which period and variables you need.</p></div>
+      <div><p class="mini-h">Please cite</p><p>If you use these data, cite the paper: Lee, J., Yueh, S., Entekhabi, D., Colliander, A., Im, J., Park, C.-H., and Kim, H. Soil Moisture Retrieval For Dense Vegetation Considering Time-Varying First-Order Scattering From SMAP L-Band Dual-Polarized Brightness Temperatures. <i>Remote Sensing of Environment</i>, accepted. Preprint: <a href="https://doi.org/10.2139/ssrn.7287481" target="_blank" rel="noopener">doi:10.2139/ssrn.7287481</a></p></div>
+      <div><p class="mini-h">Research collaboration</p><p>For joint work with HDCA — other periods, regions or sensors, the vegetation parameters, assimilation or validation studies — write to Hyunglok Kim, <a href="mailto:hyunglokkim@gist.ac.kr">hyunglokkim@gist.ac.kr</a> (HydroAI Lab, GIST).</p></div>
+    </div>
     <p class="lead">One NetCDF file per day, plus one merged file for the whole record. A daily file is about 8 MB; the merged file holds every variable for 2015–2025 on one time axis.</p>
     <div class="notice" id="dlNotice"></div>
     <h3>The merged file</h3>
@@ -336,7 +343,8 @@
       <li><b>Gaps.</b> <span id="abMissing">—</span></li>
     </ul>
 
-    <h3 id="ab-cite">Citation</h3>
+    <h3 id="ab-cite">Citation and collaboration</h3>
+    <p>Please cite the paper when you use these data, and write to <a href="mailto:hyunglokkim@gist.ac.kr">hyunglokkim@gist.ac.kr</a> for research collaboration.</p>
     <p class="cite">Lee, J., Yueh, S., Entekhabi, D., Colliander, A., Im, J., Park, C.-H., and Kim, H. Soil Moisture Retrieval For Dense Vegetation Considering Time-Varying First-Order Scattering From SMAP L-Band Dual-Polarized Brightness Temperatures. <i>Remote Sensing of Environment</i>, accepted. Preprint: <a href="https://doi.org/10.2139/ssrn.7287481" target="_blank" rel="noopener">doi:10.2139/ssrn.7287481</a>.</p>
 
     <h3 id="ab-credits">Sources and credits</h3>
@@ -364,7 +372,7 @@
         <a href="#ab-inputs">Inputs</a>
         <a href="#ab-made">How these fields were made</a>
         <a href="#ab-read">Read this before you use the numbers</a>
-        <a href="#ab-cite">Citation</a>
+        <a href="#ab-cite">Citation and collaboration</a>
         <a href="#ab-credits">Sources and credits</a>
       </nav>
     </div>
