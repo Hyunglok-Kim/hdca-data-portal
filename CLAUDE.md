@@ -224,6 +224,16 @@ the opening turn too slow (`hdca-v3`: turn and zoom 1.7 s each, the Amazon stage
 lines ("Imagery © Esri…", the ET card's background line) taken off every card; the attribution stays in the
 portals' own maps and in `embed/tools/README.md`.
 
+**A fifth card, 2026-11-18.** The Korea inland water quality portal's session added the card and panel `#wq`
+(its loop and the tools that make it are in that portal's repository, `korea-water-quality-portal: embed/`),
+at the lab head's word. With five cards the hub's columns changed: three across from 1700 to 1999 px (three
+and two), five across from 2000 px (all five in one row on the lab head's 2048 px display, each 382 px wide);
+below 1700 px nothing changed (two across, then one column of horizontal cards, then stacked). Six exact
+replacements through `view.dispatch` after the editor's text matched this file (29,626 chars, sha1 404c7920);
+the editor after saving, the live page and this file are equal: 33,673 chars, sha1
+`911d4393a1a8a7da5ebc13bfd967f34680c5ff6e`. `check_captions.py` and `check_playback.py` pass on the live page
+with all five cards. No other card's words, captions or pictures were touched.
+
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
 `t = c.cmTile || c.cmView`, `view = t.view || t.root.view`; `view.state.doc.toString()` reads the text,
