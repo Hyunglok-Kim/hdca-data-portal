@@ -250,6 +250,17 @@ pictures and save new `sizes` attributes, which go out with the next publish by 
 every page you had open from before, and compare the pictures' `sizes` after the publish, not only the
 embed's text. (On /data both pictures kept theirs.)
 
+**The ET card counts 19 sample areas, 2026-11-21 evening.** The lab head approved 30 m sample areas for
+France (the paper's eleven French flux-tower sites, as for the Korean eight); the portal got them first, and
+the card's Status line followed: "at 30 m in eight sample areas" became "at 30 m in 19 sample areas". One
+replacement through `view.dispatch` after the editor's text matched this file (33,831 chars, sha1 a61a64ea);
+the editor after saving, the live page and this file are equal: 33,828 chars, sha1
+`27180c0905e86d1560ba8a41ea54eb1dd40a065c`, published 09:06:39 UTC. The loop and its captions are unchanged
+(`et-v3` shows no area marks, and its 30 m part is still Pyeongchang). A copy of all 43 pages from right
+before the click, compared with one from after it (`site_snapshot.py` of the water-quality portal's
+repository), shows that one place on /data and no picture's `sizes` changed. `check_captions.py` and
+`check_playback.py` pass on the live page and all five cards open their portals.
+
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
 `t = c.cmTile || c.cmView`, `view = t.view || t.root.view`; `view.state.doc.toString()` reads the text,
