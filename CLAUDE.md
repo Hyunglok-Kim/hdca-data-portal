@@ -10,8 +10,10 @@ complete daily `time` axis (days since 2015-04-01, NaN where nothing was retriev
 merged file of the lab storage. `js/config.js` carries the record (`zenodo`: DOI, page, files with sizes and
 MD5 sums); the Download tab lists the files with direct links, the code examples read them, and the About tab
 cites both the paper and the data record (updated 2026-11-22 at the PI's word, "연구실 사이트 업데이트 해
-제노도 링크랑 같이"). The lab-storage tables (`#dlLab`) show only with `?nas=` or an `ncBase`. It shows daily, monthly and climatological maps on a
-globe and the full 11-year record of any cell for all three variables.
+제노도 링크랑 같이"). The lab-storage tables (`#dlLab`) show only with `?nas=` or an `ncBase`.
+
+The portal shows daily, monthly and climatological maps on a globe and the full 11-year record of any cell
+for all three variables.
 
 **Status (2026-11-15): public on GitHub Pages** at https://hyunglok-kim.github.io/hdca-data-portal/
 (the PI's decision the same day: "공개해") **and embedded on hydroai.net/data#hdca** the way Hampyeong is.
@@ -255,6 +257,17 @@ last used (Home), not on the page you want; and while a page is open it may re-m
 pictures and save new `sizes` attributes, which go out with the next publish by anyone. So keep a copy of
 every page you had open from before, and compare the pictures' `sizes` after the publish, not only the
 embed's text. (On /data both pictures kept theirs.)
+
+**The HDCA card says published and on Zenodo, 2026-11-22 (Sat Nov 21 2026 19:25:03 UTC).** At the PI's word
+("연구실 사이트 업데이트 해 제노도 링크랑 같이"), the card's Status line became "Published in Remote Sensing of
+Environment (349, 115787); data open on Zenodo (CC BY 4.0)" and a fifth "In the portal" line was added ("Zenodo files,
+citation and collaboration contact"). Two exact replacements through `view.dispatch` after the editor's text matched
+this file (33,828 chars, sha1 27180c09); the editor after saving, the live page and this file are equal: 33,938 chars,
+sha1 `f932cb5b83e776b27a62438be6cd52ed6399c995`. The Designer was opened by the Data page's pageId
+(`6a009f834738c0d492e62eac`), no other page visited; ten pages fetched before and after the publish differ only in
+/data's two lines (Home's `sizes` unchanged). Both connected Chromes had been logged out of Webflow; the PI signed in
+himself in the tab this session opened (Browser 2; Browser 1 is his local one). Peers (wq-korea-86, wq-korea-cd,
+prithvi-et-8e) were told before the Designer was opened, before the click, and given the stamp after.
 
 **The ET card counts 19 sample areas, 2026-11-21 evening.** The lab head approved 30 m sample areas for
 France (the paper's eleven French flux-tower sites, as for the Korean eight); the portal got them first, and
