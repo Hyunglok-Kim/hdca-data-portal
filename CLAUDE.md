@@ -261,17 +261,22 @@ before the click, compared with one from after it (`site_snapshot.py` of the wat
 repository), shows that one place on /data and no picture's `sizes` changed. `check_captions.py` and
 `check_playback.py` pass on the live page and all five cards open their portals.
 
-**That clean comparison was not the end of it.** For this edit the Designer was opened by the site's plain
-address and landed on Home for some forty seconds before the Data page was chosen; nothing was touched
-there. Home went out unchanged with this publish (09:06:39 UTC), but Webflow had kept re-measured `sizes`
-for three of Home's pictures, and the next publish, by the projects session at 09:29:53 UTC, carried them:
-`main_ML-min.png` "31px", `main_LSM-min.png` "(max-width: 479px) 45vw, 108px", `satellite.png`
-"(max-width: 479px) 60vw, 144px". The layout held (the home-page session had given those pictures explicit
-widths that morning) but the browser then drew them from the 500 px file at 462 to 635 px wide. **So open
-the Designer by the target page's own address** (`…design.webflow.com/?pageId=` + the `data-wf-page` value
-in that page's live `<html>` tag), never by the site address or by the page switcher from Home; and if it
-did land on Home, tell the next publisher to look at Home's `sizes` after their publish, and look again
-yourself. The repair of Home is the home-page session's.
+**Home's pictures changed with the next publish; the cause is not established.** For this edit the Designer
+was opened by the site's plain address and landed on Home for some 35 seconds before the Data page was chosen;
+nothing was touched there. Home went out unchanged with this publish (09:06:39 UTC). With the next one, by the
+projects session at 09:29:53 UTC, three of Home's pictures had other `sizes`: `main_ML-min.png` "31px",
+`main_LSM-min.png` "(max-width: 479px) 45vw, 108px", `satellite.png` "(max-width: 479px) 60vw, 144px". The
+layout held (the home-page session had given those pictures explicit widths that morning) but the browser
+then drew two of them from the 500 px file at 462 and 635 px wide. This was first reported as the doing of
+the landing on Home. The home-page session's record of the day's publishes does not bear that out: four
+publishes that followed a visit to Home (two by this session, at 02:59:07 and 09:06:39, two by the home-page
+session) left the values alone, and the two that changed them (01:41:15 and 09:29:53) both followed Designer
+work on the project pages. What sets it off is not known. **Still: open the Designer by the target page's own
+address** (`…design.webflow.com/?pageId=` + the `data-wf-page` value in that page's live `<html>` tag) and
+stay off pages that are not yours; compare the whole site before and after a publish; look at Home again
+after the next publish by anybody; and do not name a cause before the whole day's record has been read. The
+repair of Home (a few lines in its first block that tell each picture the width it is drawn at) is the
+home-page session's.
 
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
