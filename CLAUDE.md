@@ -2,15 +2,21 @@
 
 Web portal for the lab's HDCA product: daily soil moisture (SM), vegetation optical depth (VOD) and
 effective scattering albedo (ω̄) retrieved from SMAP L-band brightness temperatures on the 36 km
-EASE-Grid 2.0 global grid, 1 April 2015 – 31 December 2025 (Lee et al., accepted in *Remote Sensing of
-Environment*; preprint doi:10.2139/ssrn.7287481). It shows daily, monthly and climatological maps on a
+EASE-Grid 2.0 global grid, 1 April 2015 – 31 December 2025 (Lee et al., *Remote Sensing of Environment*
+349, 115787, doi:10.1016/j.rse.2026.115787; the issue is dated January 2027, online since 2026-11-18).
+**The data are public on Zenodo since 2026-11-20**: doi:10.5281/zenodo.24359287, CC BY 4.0, eleven files
+`HDCA_YYYY.nc` (one calendar year each, 322–383 MB, 4.0 GB in all) with SM, VOD, OMEGA, TBv, TBh, Teff on a
+complete daily `time` axis (days since 2015-04-01, NaN where nothing was retrieved) — not the daily files and
+merged file of the lab storage. `js/config.js` carries the record (`zenodo`: DOI, page, files with sizes and
+MD5 sums); the Download tab lists the files with direct links, the code examples read them, and the About tab
+cites both the paper and the data record (updated 2026-11-22 at the PI's word, "연구실 사이트 업데이트 해
+제노도 링크랑 같이"). The lab-storage tables (`#dlLab`) show only with `?nas=` or an `ncBase`. It shows daily, monthly and climatological maps on a
 globe and the full 11-year record of any cell for all three variables.
 
 **Status (2026-11-15): public on GitHub Pages** at https://hyunglok-kim.github.io/hdca-data-portal/
 (the PI's decision the same day: "공개해") **and embedded on hydroai.net/data#hdca** the way Hampyeong is.
-The paper is accepted but not yet published. The lab dashboard embeds the public page (`hdca.html`) and still
-serves a local copy at `/rd/hdca/` for lab members as a fallback. Still to do: deposit the NetCDF files
-(Zenodo or similar) and put the DOI into `js/config.js` (`ncBase`) and the About tab.
+The lab dashboard embeds the public page (`hdca.html`) and still serves a local copy at `/rd/hdca/` for lab
+members as a fallback. Paper and data are published (above); nothing is left to deposit.
 
 This portal follows the Prithvi-ET portal (`~/orca/projects/prithvi-et/portal/`) in structure, look and
 dashboard wiring; read that folder's `CLAUDE.md` for the shared background. What differs is the data
@@ -289,11 +295,11 @@ last time either: the lab head resizes that Chrome window, so take a screenshot 
 The retrieval code (`Time_Varing_1Order_Scattering_code`) and the manuscript repository stay private; the
 portal does not link them (PI decision 2026-11-15). The pipeline here only builds browse data from the product.
 
-Left for the PI:
-1. **NetCDF files**: deposit on Zenodo (or similar) for a DOI; then set `ncBase` in `js/config.js` to the
-   file address, so the Download tab shows direct links and the code examples use them.
-2. **At publication**: replace "accepted" with the published reference and DOI in the About tab and in
-   `pipeline/make_catalog.py`'s source block, and in `gateway/research_datasets.json`.
+Both items once left for the PI are done (2026-11-22): the NetCDF files are on Zenodo (the `zenodo` block of
+`js/config.js`; `ncBase` stays empty because the release is per year, not the lab's daily/merged layout), and the
+published reference is in the use-strip, the Download tab, the About tab and `gateway/research_datasets.json`.
+If the files are ever re-deposited (a new Zenodo version), update the record, the file list and the MD5 sums in
+`js/config.js` — the Download tab and the code examples read nothing else.
 
 ## Rules that must survive any redesign
 

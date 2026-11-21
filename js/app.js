@@ -912,13 +912,35 @@ const fileAddress = (rel) => (CFG.ncBase ? CFG.ncBase.replace(/\/$/, "") + "/" +
 const dayPath = (d) => `Retrieved_2nd/${d.slice(0, 4)}/${d.slice(0, 4)}.${d.slice(5, 7)}.${d.slice(8, 10)}/HDCA_2nd_${d.replace(/-/g, "")}.nc`;
 function renderDownload() {
   const notice = $("#dlNotice"); notice.replaceChildren();
-  if (CFG.ncBase) notice.append("Files download directly from the links below.");
-  else {
+  const src = CAT.source, zen = CFG.zenodo;
+  const byYear = Object.fromEntries(src.years.map((y) => [y.year, y]));
+  /* the public release: one file per year on Zenodo */
+  if (zen) {
+    notice.append("Files download directly from Zenodo (", el("a", { href: zen.url, target: "_blank", rel: "noopener" }, "doi:" + zen.doi),
+      `, ${zen.license}). Each file holds one calendar year on a complete daily time axis; days without a retrieval are NaN.`);
+    const link = (f) => `${zen.record}/files/${f.name}?download=1`;
+    $("#dlZen tbody").replaceChildren(...zen.files.map((f) => {
+      const y = byYear[f.year] || { files: 0, missing: [] };
+      return el("tr", {}, [el("td", { class: "mono" }, el("a", { href: link(f) }, f.name)),
+        el("td", { class: "num" }, String(y.files)),
+        el("td", { class: "num", title: y.missing.join(", ") }, String(y.missing.length)),
+        el("td", { class: "num" }, fmtBytes(f.bytes)),
+        el("td", { class: "mono" }, f.md5)]);
+    }));
+    $("#dlZenTotal").textContent = `${zen.files.length} files · ${fmtBytes(zen.files.reduce((a, f) => a + f.bytes, 0))}`;
+    $("#dlCopyZen").onclick = (e) => copyText(zen.files.map(link).join("\n"), e.currentTarget);
+    const miss = src.years.flatMap((y) => y.missing);
+    $("#dlMissing").textContent = miss.length ? `Days without a SMAP file, all NaN in the yearly files (${miss.length}): ${spans(miss)}.` : "";
+  } else {
     notice.append(el("b", {}, "The NetCDF files are not in a public repository yet. "),
-      "A DOI link will be added here when they are deposited; until then write to ", el("a", { href: "mailto:" + CFG.contactEmail }, CFG.contactEmail), " for access.");
-    if (nasRoot()) notice.append(el("br"), "Lab members: the files are on the lab storage under ", el("code", {}, nasRoot() + "/"), " (CPU server).");
+      "Write to ", el("a", { href: "mailto:" + CFG.contactEmail }, CFG.contactEmail), " for access.");
   }
-  const src = CAT.source;
+  /* the lab storage: daily files and the merged file, for members (or an alternative public address, ncBase) */
+  const lab = $("#dlLab");
+  lab.hidden = !(nasRoot() || CFG.ncBase);
+  if (lab.hidden) return;
+  $("#dlLabNote").replaceChildren(CFG.ncBase ? "The daily files and the merged file download from the links below." :
+    el("span", {}, ["Lab members: the daily files and the merged file are on the lab storage under ", el("code", {}, nasRoot() + "/"), " (CPU server)."]));
   $("#dlMerged tbody").replaceChildren(el("tr", {}, [
     el("td", { class: "mono" }, CFG.ncBase ? el("a", { href: fileAddress(src.merged_file) }, src.merged_file.split("/").pop()) : fileAddress(src.merged_file)),
     el("td", { class: "num" }, fmtBytes(src.merged_bytes)),
@@ -935,7 +957,7 @@ function renderDownload() {
     const files = rows.reduce((a, y) => a + y.files, 0), bytes = rows.reduce((a, y) => a + y.bytes, 0);
     $("#dlTotal").textContent = `${fmt(files)} files · ${fmtBytes(bytes)}`;
     const miss = rows.flatMap((y) => y.missing);
-    $("#dlMissing").textContent = miss.length ? `Days without a file (${miss.length}): ${spans(miss)}.` : "Every day in this range has a file.";
+    $("#dlLabMissing").textContent = miss.length ? `Days without a file (${miss.length}): ${spans(miss)}.` : "Every day in this range has a file.";
   };
   sel.onchange = draw; draw();
   $("#dlCopy").onclick = (e) => copyText(dayList.filter((d) => !sel.value || d.d.startsWith(sel.value)).map((d) => fileAddress(dayPath(d.d))).join("\n"), e.currentTarget);
@@ -952,12 +974,13 @@ function spans(days) {
   return out.join(", ");
 }
 function renderCode() {
-  const base = CFG.ncBase ? CFG.ncBase.replace(/\/$/, "") : nasRoot() || "/path/to/HDCA";
+  const zen = CFG.zenodo;
+  const open = zen
+    ? `import glob\nimport numpy as np\nimport xarray as xr\n\n# the eleven yearly files from Zenodo (${zen.url}), downloaded to one folder\nds = xr.open_mfdataset(sorted(glob.glob("HDCA_20*.nc")), combine="by_coords")   # 2015-04-01 … ${CAT.record.last}, daily`
+    : `import numpy as np\nimport xarray as xr\n\nds = xr.open_dataset("${nasRoot() || "/path/to/HDCA"}/${CAT.source.merged_file}")       # 2015-04-01 … ${CAT.record.last}, daily`;
+  const labNote = nasRoot() ? `\n# lab members: ${nasRoot()}/${CAT.source.merged_file} holds the same variables on one time axis` : "";
   $("#codePt").textContent =
-`import numpy as np
-import xarray as xr
-
-ds = xr.open_dataset("${base}/${CAT.source.merged_file}")       # 2015-04-01 … ${CAT.record.last}, daily
+`${open}${labNote}
 lon, lat = -69.27, -12.83                                        # Tambopata, Amazon
 
 # the grid is EASE-Grid 2.0 (equal-area), so pick the cell whose centre is nearest
@@ -969,14 +992,13 @@ sm = cell["SM"]                                                 # m3/m3, NaN whe
 print(float(cell.latitude), float(cell.longitude), int(sm.notnull().sum()), "days with data")
 monthly = sm.resample(time="1MS").mean()                         # monthly mean of the retrieved days`;
   $("#codeMap").textContent =
-`import glob
-import xarray as xr
+`import xarray as xr
 
-files = sorted(glob.glob("${base}/Retrieved_2nd/2020/2020.07.*/HDCA_2nd_*.nc"))
-ds = xr.open_mfdataset(files, combine="nested", concat_dim="time")
+ds = xr.open_dataset("HDCA_2020.nc")                             # one yearly file from Zenodo
+july = ds.sel(time="2020-07")                                    # the 31 days of July 2020
 
-sm_july = ds["SM"].mean("time")                                 # mean over the days each cell was retrieved
-n_days = ds["SM"].notnull().sum("time")                         # how many days went into each cell
+sm_july = july["SM"].mean("time")                               # mean over the days each cell was retrieved
+n_days = july["SM"].notnull().sum("time")                       # how many days went into each cell
 sm_july = sm_july.where(n_days >= 5)                            # drop cells with fewer than five days
 
 # a quick look: cell centres are 2-D coordinates

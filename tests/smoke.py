@@ -197,7 +197,12 @@ with sync_playwright() as pw:
         page.wait_for_timeout(250)
         page.screenshot(path=str(shots / shot), full_page=True)
     page.click(".tab[data-tab=download]")
-    check(page.locator("#dlTable tbody tr").count() == 11, "download table lists 11 years: " + page.inner_text("#dlTotal"))
+    check(page.locator("#dlZen tbody tr").count() == 11, "Zenodo table lists 11 yearly files: " + page.inner_text("#dlZenTotal"))
+    check(page.locator("#dlZen tbody tr a").first.get_attribute("href").startswith("https://zenodo.org/records/24359287/files/HDCA_2015.nc"), "Zenodo links point at the record's files")
+    has_nas = "nas=" in page.url
+    check(page.locator("#dlLab").is_hidden() != has_nas, "lab-storage tables shown only with ?nas= (hidden: %s)" % page.locator("#dlLab").is_hidden())
+    if has_nas:
+        check(page.locator("#dlTable tbody tr").count() == 11, "download table lists 11 years: " + page.inner_text("#dlTotal"))
 
     # narrow screen
     page.set_viewport_size({"width": 430, "height": 860})
