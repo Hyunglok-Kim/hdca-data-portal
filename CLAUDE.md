@@ -234,6 +234,22 @@ the editor after saving, the live page and this file are equal: 33,673 chars, sh
 `911d4393a1a8a7da5ebc13bfd967f34680c5ff6e`. `check_captions.py` and `check_playback.py` pass on the live page
 with all five cards. No other card's words, captions or pictures were touched.
 
+**The ET card names France, 2026-11-21.** The lab head put the France maps on the server and asked for the
+site to show them; the Prithvi-ET session made France the portal's second region and changed its card here:
+the loop is `et-v3` (globe, France, across to the Korean Peninsula, Pyeongchang at 30 m; `embed/tools/cap_et_v3.py`)
+with seven captions, and four sentences name France beside the peninsula ("The Korean Peninsula and France
+are open now", "160 monthly maps per region", "Korean Peninsula and France now", "down to about 120 m").
+Ten exact replacements inside the ET card through `view.dispatch` after the editor's text matched this file
+(33,673 chars, sha1 911d4393); the editor after saving, the live page and this file are equal: 33,831 chars,
+sha1 `a61a64eaa949339440216b41acaa377070d0b8a1`, published 02:59:07 UTC. `check_captions.py` and
+`check_playback.py` pass on the live page, and every card opens its portal. `et-v2.*` stays in `embed/media/`
+because the home page's reel played it; ask the home-page session before removing a loop from that folder.
+Two things learned that day about the Designer, from the sessions working on the site: it opens on the page
+last used (Home), not on the page you want; and while a page is open it may re-measure that page's own
+pictures and save new `sizes` attributes, which go out with the next publish by anyone. So keep a copy of
+every page you had open from before, and compare the pictures' `sizes` after the publish, not only the
+embed's text. (On /data both pictures kept theirs.)
+
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
 `t = c.cmTile || c.cmView`, `view = t.view || t.root.view`; `view.state.doc.toString()` reads the text,
