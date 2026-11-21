@@ -261,6 +261,18 @@ before the click, compared with one from after it (`site_snapshot.py` of the wat
 repository), shows that one place on /data and no picture's `sizes` changed. `check_captions.py` and
 `check_playback.py` pass on the live page and all five cards open their portals.
 
+**That clean comparison was not the end of it.** For this edit the Designer was opened by the site's plain
+address and landed on Home for some forty seconds before the Data page was chosen; nothing was touched
+there. Home went out unchanged with this publish (09:06:39 UTC), but Webflow had kept re-measured `sizes`
+for three of Home's pictures, and the next publish, by the projects session at 09:29:53 UTC, carried them:
+`main_ML-min.png` "31px", `main_LSM-min.png` "(max-width: 479px) 45vw, 108px", `satellite.png`
+"(max-width: 479px) 60vw, 144px". The layout held (the home-page session had given those pictures explicit
+widths that morning) but the browser then drew them from the 500 px file at 462 to 635 px wide. **So open
+the Designer by the target page's own address** (`…design.webflow.com/?pageId=` + the `data-wf-page` value
+in that page's live `<html>` tag), never by the site address or by the page switcher from Home; and if it
+did land on Home, tell the next publisher to look at Home's `sizes` after their publish, and look again
+yourself. The repair of Home is the home-page session's.
+
 Two things learned in the Designer that day. The editor's text can be read and patched without the clipboard,
 which may hold something of the lab head's: with the editor open, `c = document.querySelector('.cm-content')`,
 `t = c.cmTile || c.cmView`, `view = t.view || t.root.view`; `view.state.doc.toString()` reads the text,
