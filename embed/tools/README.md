@@ -12,7 +12,8 @@ one settled frame at a time, with software drawing (no graphics card needed).
 | Card | What it shows | Made by |
 |---|---|---|
 | `cvs` | The Hampyeong 1 km cell in the drone's true colour, ten flights from bare fields to harvest (2026), the 47 ground stations marked | `make_cvs.py`, from the Hampyeong portal's `data/uav/` layers and `data/stations.csv` |
-| `et-v2` | The globe with ET over all land, then down to the Korean Peninsula and into one 30 m sample area (Pyeongchang), mean annual ET | `cap_et.py`, from a local preview of the Prithvi-ET portal on its **public** copy of the tiles |
+| `et-v3` | The globe with ET over all land, then down to France, across to the Korean Peninsula and into one 30 m sample area (Pyeongchang), mean annual ET; 17.7 s | `cap_et_v3.py`, from a local preview of the Prithvi-ET portal on its **public** copy of the tiles (both regions) |
+| `et-v2` (the ET card until 2026-11-21; **still played by the home page's reel**, so the files stay) | The same without France: globe, Korean Peninsula, Pyeongchang; 13.7 s | `cap_et.py`, as above |
 | `hdca-v3` | The globe turning briskly with the record-mean soil moisture, then into the Amazon basin, whose soil moisture plays month by month (April 2015 to December 2025) while a chart draws the basin's monthly area mean over it | `amazon_series.py` (the area means), `cap_hdca_amazon.py` (raw frames, from a local preview of this portal), then `compose_hdca_amazon.py` (box, chart, dissolve) |
 | `hdca` (first version, retired) | The globe turning once: soil moisture, then vegetation optical depth, then the effective scattering albedo (record means) | `cap_hdca.py` then `blend_hdca.py` |
 
@@ -22,9 +23,11 @@ one settled frame at a time, with software drawing (no graphics card needed).
 CVS_FPS=15 CVS_HOLD=10 CVS_FADE=8 python make_cvs.py ~/orca/projects/hampyeong-cal-val frames/cvs
 ./encode.sh frames/cvs cvs ../media 29 42 768 15
 
-# et — the Prithvi-ET preview must serve the public copy of the tiles (see that repository's notes)
-python cap_et.py "http://127.0.0.1:8791/?data=/data/prithvi-openet-tiles-1/&intro=0" frames/et
-./encode.sh frames/et et-v2 ../media 31 44 768 24
+# et — the Prithvi-ET preview must serve the public copy of the tiles (see that repository's notes):
+#   in the portal repository, python dev_server.py --data <folder holding prithvi-openet-tiles-1 … and -fr-1 …> --port 8791
+python cap_et_v3.py "http://127.0.0.1:8791/?data=/data/prithvi-openet-tiles-1/&intro=0" frames/et3       # add 'test' for a handful of frames
+./encode.sh frames/et3 et-v3 ../media 31 44 768 24        # 425 frames at 24 a second: about 1 MB each for mp4 and webm
+# the loop before France (et-v2): python cap_et.py … frames/et; ./encode.sh frames/et et-v2 ../media 31 44 768 24
 
 # hdca-v2 — this portal's preview (dev_server.py --port 8792); needs the pmtiles package besides the above
 python amazon_series.py ../../data amazon_sm.json          # area means of the Amazon box from the portal's own fields (kept here)
@@ -48,9 +51,15 @@ Rules these pictures keep, and a re-made one must keep too:
   (MOD16A2GF), so the card says so for as long as it shows: its first caption ("Global background: MODIS ET
   (MOD16A2GF)", also the words on the still picture). Keep it when the captions are re-timed or the card is
   re-worded. (The card's credit line that also named it went with all the cards' credit lines; see below.) The first version of the loop
-  (`et.*`, the morning of the same day) had switched the background off instead.
-- **A re-made loop gets a new file name** (`et-v2`), so that a cached copy of the old picture never plays
-  under the new captions. The old files go once the new text is live.
+  (`et.*`, the morning of the same day) had switched the background off instead. Since France went up (2026-11-21, `et-v3`)
+  the loop comes down on France before it goes to Korea; the globe shows three times, and the background's caption
+  comes back each time: at 0 s, 5.2 s and 16.7 s. The region captions start when the region fills the frame (3.0 s
+  and 8.7 s), not while the globe with the background is still what one mostly sees.
+- **A re-made loop gets a new file name** (`et-v2`, `et-v3`), so that a cached copy of the old picture never plays
+  under the new captions. The old files go once the new text is live **and nothing else plays them**: the home
+  page's reel (the hero embed on hydroai.net, kept in the water-quality portal's repository, `embed/home/`) plays
+  loops from this folder with its own caption times (`et-v2` until its entry is changed). Ask the home-page
+  session before removing a loop.
 - **No credit lines on the cards (the lab head, 2026-11-17 afternoon: "모든 섹션카드 background ET: ~, imagery @Esri, 이거 지워").**
   The ET, HDCA and TCA loops show Esri World Imagery; the `.hd-credit` lines that named it (and MOD16A2GF on the
   ET card) were taken off the cards and the rule removed from the embed. The attribution stays where the maps are:
