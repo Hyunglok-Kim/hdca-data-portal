@@ -6,12 +6,13 @@ one card per dataset, and each card opens with a short silent loop from `../medi
 reduced motion). The words on a picture are in the card's `data-caps` attribute, as `[seconds, text]`
 pairs; when a loop is re-made, its caption times must be re-made with it.
 
-All three are 768 × 432 and about twelve seconds. They are made from what the portals themselves publish,
+All are 768 × 432 and twelve to eighteen seconds long. They are made from what the portals themselves publish,
 one settled frame at a time, with software drawing (no graphics card needed).
 
 | Card | What it shows | Made by |
 |---|---|---|
-| `cvs` | The Hampyeong 1 km cell in the drone's true colour, ten flights from bare fields to harvest (2026), the 47 ground stations marked | `make_cvs.py`, from the Hampyeong portal's `data/uav/` layers and `data/stations.csv` |
+| `cvs-v2` | The Hampyeong 1 km cell in three parts. One flight day (25 May 2026) through the drone's four sensors: true colour, NDVI, thermal infrared, LiDAR surface height. Then the season to 28 October, one day a frame: the nearest clean flight as the picture, each ground station a dot in the colour of its soil moisture that day (the portal's scale), and a chart of every station's daily series, their mean and the daily rain. Then back to the whole cell and 2 km round it: HLS NDVI (30 m), Sentinel-1 VV (10 m), and NISAR soil moisture (beta) as 200 m cells over the drone picture, all 47 stations marked; 17.75 s | `make_cvs_v2.py`, from the Hampyeong portal's `data/uav/` and `data/satellites/` layers, `data/in_situ/stations.csv` and `daily_sm.json`, and `data/models/GPM_IMERG.csv` |
+| `cvs` (the first version, the card's loop until 2026-11-22; the files stay until nothing plays or shows them: ask the home-page session) | The cell in the drone's true colour, ten flights from bare fields to harvest (2026), the 47 ground stations marked | `make_cvs.py`, from the Hampyeong portal's `data/uav/` layers and `data/stations.csv` |
 | `et-v3` | The globe with ET over all land, then down to France, across to the Korean Peninsula and into one 30 m sample area (Pyeongchang), mean annual ET; 17.7 s | `cap_et_v3.py`, from a local preview of the Prithvi-ET portal on its **public** copy of the tiles (both regions) |
 | `et-v2` (the ET card until 2026-11-21; **still played by the home page's reel**, so the files stay) | The same without France: globe, Korean Peninsula, Pyeongchang; 13.7 s | `cap_et.py`, as above |
 | `hdca-v3` | The globe turning briskly with the record-mean soil moisture, then into the Amazon basin, whose soil moisture plays month by month (April 2015 to December 2025) while a chart draws the basin's monthly area mean over it | `amazon_series.py` (the area means), `cap_hdca_amazon.py` (raw frames, from a local preview of this portal), then `compose_hdca_amazon.py` (box, chart, dissolve) |
@@ -19,9 +20,13 @@ one settled frame at a time, with software drawing (no graphics card needed).
 
 ```bash
 # Python with playwright (chromium installed), numpy, Pillow; ffmpeg with libx264 and libvpx-vp9.
-# cvs — 15 frames a second: ten flights, each held 10 frames and cross-faded over 8
-CVS_FPS=15 CVS_HOLD=10 CVS_FADE=8 python make_cvs.py ~/orca/projects/hampyeong-cal-val frames/cvs
-./encode.sh frames/cvs cvs ../media 29 42 768 15
+# cvs-v2 — 426 frames at 24 a second, drawn from the Hampyeong portal's repository as it is published; also needs matplotlib
+python make_cvs_v2.py ~/orca/projects/hampyeong-cal-val frames/cvs2        # add 'test' for a handful of frames
+./encode.sh frames/cvs2 cvs-v2 ../media 29 42 768 24       # about 0.8 MB each for mp4 and webm
+# the larger loop for the home page's reel (1280 × 720; kept in the water-quality portal's repository as embed/media/cvs-wide-v2.*):
+#   CVS_SCALE=1.3333333333 python make_cvs_v2.py ~/orca/projects/hampyeong-cal-val frames/cvs2w; ./encode.sh frames/cvs2w cvs-wide-v2 <that folder> 29 42 1280 24
+# the first loop (cvs) — 15 frames a second: ten flights, each held 10 frames and cross-faded over 8
+#   CVS_FPS=15 CVS_HOLD=10 CVS_FADE=8 python make_cvs.py ~/orca/projects/hampyeong-cal-val frames/cvs; ./encode.sh frames/cvs cvs ../media 29 42 768 15
 
 # et — the Prithvi-ET preview must serve the public copy of the tiles (see that repository's notes):
 #   in the portal repository, python dev_server.py --data <folder holding prithvi-openet-tiles-1 … and -fr-1 …> --port 8791
@@ -39,7 +44,8 @@ python compose_hdca_amazon.py frames/hdca/raw amazon_sm.json frames/hdca/final
 
 `encode.sh FRAMES NAME OUT CRF_H264 CRF_VP9 WIDTH FPS` writes the three files. The sizes to expect are
 0.4 to 0.7 MB a loop; a loop of detailed imagery that also drifts or zooms the whole time grows past 1 MB,
-which is why the drone picture stands still and only the seasons and the station rings move.
+which is why the drone picture stands still and only the seasons and the station rings move (in `cvs-v2` it moves
+twice, each time for under a second, between the loop's three parts: 0.8 MB).
 
 Rules these pictures keep, and a re-made one must keep too:
 
@@ -65,7 +71,15 @@ Rules these pictures keep, and a re-made one must keep too:
   ET card) were taken off the cards and the rule removed from the embed. The attribution stays where the maps are:
   each portal's own attribution control, and here. The ET card's first caption still names MOD16A2GF.
 - **Clean flights only.** `make_cvs.py` lists ten flights; several others have colour artefacts over the
-  forest and one is a false-colour composite.
+  forest and one is a false-colour composite. `make_cvs_v2.py` lists the eight of them that fall in the stations' season (`FLIGHTS`).
+- **The validation site's chart is the portal's own series.** `cvs-v2` draws `data/in_situ/daily_sm.json` as the Hampyeong
+  portal publishes it (refreshed there on 2026-11-22: all 47 stations to 28 October 2026), in the portal's own colour scale,
+  and the dates in its captions are written from the data. When the portal's series grow, re-make the loop and take the
+  caption times and words from the `timeline.json` the tool writes. NISAR's soil moisture is a beta product and the caption
+  says so; the loop does not set the stations against it.
+- **No `hd-fill` on the validation site's card.** Its chart reaches from edge to edge, and in the page's row layout
+  (windows 761 to 1180 px wide) that class crops a picture to its box. The chart sits at the top of the picture because
+  the caption chip covers the foot of it on small cards.
 - **The Amazon on the HDCA card is an area mean the viewer can check.** The box is 74–50°W, 13°S–3°N (3,747 cells of
   36 km with data); its monthly and daily means come from the portal's own published fields (`amazon_series.py`), and
   the dashed line is the box's record mean. The lab head asked (2026-11-17) for the HDCA card to turn, come down on
