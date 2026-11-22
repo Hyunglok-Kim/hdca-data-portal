@@ -14,8 +14,9 @@ site is measured, in the order of the card's own facts, from what the Hampyeong 
                  at 10 m, then NISAR's soil moisture (beta) as its 200 m cells over the drone picture, all 47 stations marked.
 
 Inputs, all under HAMPYEONG_REPO/data: uav/ (catalog.csv and the layers' PNGs), satellites/ (the same), models/GPM_IMERG.csv,
-in_situ/stations.csv and in_situ/daily_sm.json. CVS_INSITU=<folder> reads the two in-situ files from another folder (a
-refreshed copy that is not in the repository yet). CVS_SCALE=<k> draws k times larger frames (1: 960 x 540, encoded 768 wide
+in_situ/stations.csv and in_situ/daily_sm.json. It draws whatever the checkout holds, so see first that it is what the portal
+publishes (embed/tools/README.md gives the two git commands). CVS_INSITU=<folder> reads the two in-situ files from another
+folder (a refreshed copy that is not in the repository yet). CVS_SCALE=<k> draws k times larger frames (1: 960 x 540, encoded 768 wide
 for the card; 1.3333333: 1280 x 720 for the home page's reel; the drone mosaic is about 1 m, so no larger). CVS_PANEL=bottom
 puts the chart at the foot of the picture instead of the top (the top keeps it clear of the caption at every card size).
 CVS_RANGE=<from>:<to> draws a part of the frames, so that several processes can share the work.
@@ -49,7 +50,7 @@ MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "No
 # ── what is shown ──────────────────────────────────────────────────────────────────────────────────────────────────
 DAY1 = "20260525"                                   # the flight day seen through four sensors (the one with a midday thermal map)
 FLIGHTS = ["20260525", "20260724", "20260817", "20260829", "20260915", "20260922", "20261009", "20261016"]   # clean true-colour flights of the season
-D0, D1 = D.date(2026, 5, 25), D.date(2026, 10, 28)  # the season's clock; the stations' record is complete to 28 October
+D0, D1 = D.date(2026, 5, 25), D.date(2026, 10, 28)  # the season's clock: every station's record reaches 28 October (45 to 47 a day)
 HLS = "HP_SAT_NDVI_20261015_0205.png"               # satellites/: scenes near the last flight, without gaps
 S1 = os.environ.get("CVS_S1", "HP_SAT_S1_VV_20261012_2132.png")
 NISAR = "HP_SAT_SM_20260118_1026.png"               # NISAR's soil moisture (beta): the latest scene the portal has
@@ -71,7 +72,8 @@ wy = lambda lat: (GRID["n"] - lat) * MY
 def view(cx, cy, w): h = w * H / W; return (cx - w / 2, cy - h / 2, w, h)
 VA = view(500.0, 553.0, 940.0)             # the drone's stage: the village, the hill, the fields between
 VC = view(500.0, float(os.environ.get("CVS_CY", "768")), 940.0)   # the stations' stage: the paddies south of the road (27 stations in
-                                           # the window, 5 of them behind the chart, none cut by its edge; every flight covers it)
+                                           # the window: 5 behind the chart and 1 just beside it are hidden while the chart is up, so
+                                           # none is cut by its edge; every flight covers it)
 VB = view(500.0, 552.3, 2000.0)            # the satellites' stage: the whole mosaic in the middle, HLS and Sentinel-1 fill the rest
 CELL = dict(n=35.01984406, s=35.01030731, e=126.55601501, w=126.54563904)      # the 1 km EASE-Grid 2.0 cell (grid/nested_grids.json)
 smooth = lambda t: t * t * (3 - 2 * t)
