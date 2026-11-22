@@ -269,6 +269,14 @@ sha1 `f932cb5b83e776b27a62438be6cd52ed6399c995`. The Designer was opened by the 
 himself in the tab this session opened (Browser 2; Browser 1 is his local one). Peers (wq-korea-86, wq-korea-cd,
 prithvi-et-8e) were told before the Designer was opened, before the click, and given the stamp after.
 
+**The CVS card moved to its second loop, 2026-11-22 (Sun Nov 22 2026 14:02:30 UTC), by tv-tca-47.** That session
+pushed `97b4b8f` (embed/media/cvs-v2.{webm,mp4,jpg}, embed/tools/make_cvs_v2.py, a README row) and replaced the Data
+embed from that commit; the live page and this file are equal: 34,073 chars, sha1
+`17ef2280f8d9731db3f1478617d0c133b4148dda`. Only the CVS card's picture block changed (files, data-caps, aria-label,
+hd-fill off) plus the Home reel's `cvs` entry; the HDCA card is byte for byte as published at 19:25:03 UTC the day
+before (checked here by diffing the card between dca8fdf and 97b4b8f). cvs.* stays in embed/media as the About-page
+fallback picture. This session was asked for its state before the Designer was opened and answered clear.
+
 **The ET card counts 19 sample areas, 2026-11-21 evening.** The lab head approved 30 m sample areas for
 France (the paper's eleven French flux-tower sites, as for the Korean eight); the portal got them first, and
 the card's Status line followed: "at 30 m in eight sample areas" became "at 30 m in 19 sample areas". One
