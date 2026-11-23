@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""make_cvs_v2.py HAMPYEONG_REPO OUTDIR [test] — frames for the Core Validation Site card, second version (cvs-v2).
+"""make_cvs_v2.py HAMPYEONG_REPO OUTDIR [test] — frames for the Core Validation Site card (cvs-v3; cvs-v2 with CVS_NOTICE=0).
 
 The first loop showed the 1 km cell from the drone in true colour, flight after flight. This one shows the three ways the
 site is measured, in the order of the card's own facts, from what the Hampyeong portal itself publishes:
@@ -21,6 +21,11 @@ for the card; 1.3333333: 1280 x 720 for the home page's reel; the drone mosaic i
 puts the chart at the foot of the picture instead of the top (the top keeps it clear of the caption at every card size).
 CVS_RANGE=<from>:<to> draws a part of the frames, so that several processes can share the work.
 
+The Sentinel-1 scene is modified Copernicus Sentinel data, and the Copernicus licence asks for the notice "Contains modified
+Copernicus Sentinel data <year>" wherever it is shown to the public. The lab head chose (2026-11-23) to have it in the
+picture, small, at the top right while the scene shows (from its wipe to the end of the loop): that is cvs-v3.
+CVS_NOTICE=0 leaves it out and draws the loop as published on 2026-11-22 (cvs-v2).
+
 The picture is drawn to scale (metres east and south of the mosaic's north-west corner). The layers' PNGs are regular in
 degrees, about 0.91 m east-west by 1.11 m north-south a pixel here; the first loop used the pixels as they are, which
 drew the site a fifth too wide.
@@ -32,7 +37,7 @@ Writes f_0000.png ... and timeline.json (frame rate, frame count, the caption ti
 import sys, os, csv, json, math, datetime as D
 from pathlib import Path
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
@@ -297,6 +302,23 @@ def finish(a, *layers):
     for l in layers: im.alpha_composite(l)
     return im.convert("RGB")
 
+NOTICE = os.environ.get("CVS_NOTICE", "1") != "0"         # the Copernicus notice over the Sentinel-1 part (see the header)
+_NFONT = ImageFont.truetype(font_manager.findfont(font_manager.FontProperties(family=fam)), int(round(22 * K)))
+def notice(a=1.0):
+    """The notice in a small dark box at the top right, beside the 1 km cell (clear of the cell, its stations and the caption
+    chip at the foot), at opacity a."""
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    if not NOTICE or a <= 0: return lay
+    lines = ["Contains modified", "Copernicus Sentinel", f"data {SAT[S1]['date'][:4]}"]
+    d = ImageDraw.Draw(lay); asc, desc = _NFONT.getmetrics(); lh = asc + desc
+    pad, gap, m = int(round(8 * K)), int(round(2 * K)), int(round(14 * K))
+    tw = int(round(max(d.textlength(t, font=_NFONT) for t in lines)))
+    x1, y0 = W - m, m; y1 = y0 + 2 * pad + len(lines) * lh + (len(lines) - 1) * gap
+    d.rounded_rectangle([x1 - tw - 2 * pad, y0, x1, y1], radius=int(round(7 * K)), fill=(15, 19, 24, int(round(150 * a))))
+    for j, t in enumerate(lines):
+        d.text((int(round(x1 - pad - d.textlength(t, font=_NFONT))), y0 + pad + j * (lh + gap)), t, font=_NFONT, fill=(232, 237, 243, int(round(240 * a))))
+    return lay
+
 # ── the sequence ───────────────────────────────────────────────────────────────────────────────────────────────────
 R1, R2 = 6.2, 3.3                                          # the stations' discs: in the season (they carry a colour), from space
 far = lambda k: dots(VB, k, r=R2, ring=0, rim=1.5)
@@ -319,11 +341,11 @@ def frame(k):
         if gone < 1: layers.append(panel(ND - 1, 1 - gone))
         return finish(a, *layers)
     if name == "h_hls": return finish(stage("hls"), outline(VB), far(k))
-    if name == "w_s1": return finish(wipe(stage("hls"), stage("s1"), (i + 1) / (L + 1)), outline(VB), far(k))
-    if name == "h_s1": return finish(stage("s1"), outline(VB), far(k))
+    if name == "w_s1": return finish(wipe(stage("hls"), stage("s1"), (i + 1) / (L + 1)), outline(VB), far(k), notice(smooth((i + 1) / (L + 1))))
+    if name == "h_s1": return finish(stage("s1"), outline(VB), far(k), notice())
     if name == "w_nisar":
-        t = (i + 1) / (L + 1); return finish(wipe(stage("s1"), stage("nisar"), t), outline(VB), outline(VB, smooth(t), grid=True), far(k))
-    if name == "h_nisar": return finish(stage("nisar"), outline(VB, grid=True), far(k))
+        t = (i + 1) / (L + 1); return finish(wipe(stage("s1"), stage("nisar"), t), outline(VB), outline(VB, smooth(t), grid=True), far(k), notice())
+    if name == "h_nisar": return finish(stage("nisar"), outline(VB, grid=True), far(k), notice())
     last = np.asarray(frame(START["close"] - 1), dtype=np.float32); first = np.asarray(frame(0), dtype=np.float32); t = smooth((i + 1) / L)
     return img(last * (1 - t) + first * t)
 

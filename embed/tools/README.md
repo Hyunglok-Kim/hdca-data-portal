@@ -12,6 +12,7 @@ one settled frame at a time, with software drawing (no graphics card needed).
 
 | Card | What it shows | Made by |
 |---|---|---|
+| `cvs-v3` (made 2026-11-23; replaces `cvs-v2` on the card and in the home reel once published) | `cvs-v2` with the Copernicus notice "Contains modified Copernicus Sentinel data 2026" in a small box at the top right, beside the 1 km cell, while the Sentinel-1 scene shows (from its wipe at 14.1 s to the end); the lab head chose this on 2026-11-23. Frames 0 to 337 and the timeline are `cvs-v2`'s, byte for byte | `make_cvs_v2.py` as it is now (`CVS_NOTICE=0` draws `cvs-v2`) |
 | `cvs-v2` | The Hampyeong 1 km cell in three parts. One flight day (25 May 2026) through the drone's four sensors: true colour, NDVI, thermal infrared, LiDAR surface height. Then the season to 28 October, one day a frame: the nearest clean flight as the picture, each ground station a dot in the colour of its soil moisture that day (the portal's scale), and a chart of every station's daily series, their mean and the daily rain. Then back to the whole cell and 2 km round it: HLS NDVI (30 m), Sentinel-1 VV (10 m), and NISAR soil moisture (beta) as 200 m cells over the drone picture, all 47 stations marked; 17.75 s | `make_cvs_v2.py`, from the Hampyeong portal's `data/uav/` and `data/satellites/` layers, `data/in_situ/stations.csv` and `daily_sm.json`, and `data/models/GPM_IMERG.csv` |
 | `cvs` (the first version, the card's loop until 2026-11-22; nothing plays or shows it now, and the files stay for going back: ask this repository's and the home page's sessions before removing them) | The cell in the drone's true colour, ten flights from bare fields to harvest (2026), the 47 ground stations marked | `make_cvs.py`, from the Hampyeong portal's `data/uav/` layers and `data/stations.csv` |
 | `et-v3` | The globe with ET over all land, then down to France, across to the Korean Peninsula and into one 30 m sample area (Pyeongchang), mean annual ET; 17.7 s | `cap_et_v3.py`, from a local preview of the Prithvi-ET portal on its **public** copy of the tiles (both regions) |
@@ -26,9 +27,9 @@ one settled frame at a time, with software drawing (no graphics card needed).
 git -C ~/orca/projects/hampyeong-cal-val status --porcelain -- data
 git -C ~/orca/projects/hampyeong-cal-val fetch -q && git -C ~/orca/projects/hampyeong-cal-val diff --stat origin/main -- data
 python make_cvs_v2.py ~/orca/projects/hampyeong-cal-val frames/cvs2        # add 'test' for a handful of frames
-./encode.sh frames/cvs2 cvs-v2 ../media 29 42 768 24       # about 0.8 MB each for mp4 and webm
+./encode.sh frames/cvs2 cvs-v3 ../media 29 42 768 24       # about 0.8 MB each for mp4 and webm (CVS_NOTICE=0 and the name cvs-v2: the loop of 2026-11-22)
 # the larger loop for the home page's reel (1280 × 720; kept in the water-quality portal's repository as embed/media/cvs-wide-v2.*):
-#   CVS_SCALE=1.3333333333 python make_cvs_v2.py ~/orca/projects/hampyeong-cal-val frames/cvs2w; ./encode.sh frames/cvs2w cvs-wide-v2 <that folder> 29 42 1280 24
+#   CVS_SCALE=1.3333333333 python make_cvs_v2.py ~/orca/projects/hampyeong-cal-val frames/cvs2w; ./encode.sh frames/cvs2w cvs-wide-v3 <that folder> 29 42 1280 24
 # each size takes about a minute in one process; CVS_RANGE=<from>:<to> (see the tool's header) splits the frames over several
 # the first loop (cvs) — 15 frames a second: ten flights, each held 10 frames and cross-faded over 8
 #   CVS_FPS=15 CVS_HOLD=10 CVS_FADE=8 python make_cvs.py ~/orca/projects/hampyeong-cal-val frames/cvs; ./encode.sh frames/cvs cvs ../media 29 42 768 15
@@ -89,8 +90,9 @@ Rules these pictures keep, and a re-made one must keep too:
 - **What `cvs-v2` shows from others, and what each asks for.** The Sentinel-1 scene (VV, 12 Oct 2026; from 14.1 s to the end
   of the loop, full frame and then dimmed round the NISAR cells) is modified Copernicus Sentinel data, and the Copernicus
   licence asks whoever shows it to the public to give the notice "Contains modified Copernicus Sentinel data 2026". On
-  2026-11-23 the notice was on neither the card nor the Hampyeong portal: where it goes is the lab head's decision, given
-  the rule on credit lines above. The other sources ask to be cited, not for a notice: the HLS scene is the Landsat-based
+  2026-11-23 the notice was on neither the card nor the Hampyeong portal. The lab head chose (2026-11-23) to have it in
+  the picture, small, while the scene shows: `cvs-v3`; the Hampyeong portal's Sentinel-1 and HLS layers carry it in the
+  map's attribution since the same day. The other sources ask to be cited, not for a notice: the HLS scene is the Landsat-based
   L30 product (NASA LP DAAC, doi:10.5067/HLS/HLSL30.002), NISAR's soil moisture the beta release (NASA/JPL/NISAR, ASF DAAC,
   doi:10.5067/NIL3SME2-B1), the rain GPM IMERG V07 (NASA, through Earth Engine).
 - **No `hd-fill` on the validation site's card.** Its chart reaches from edge to edge, and in the page's row layout
